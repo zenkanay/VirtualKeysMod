@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "virtualkeys",
+	"version": "${version}",
+	"name": "VirtualKeys",
+	"description": "A customizable virtual key panel, providing virtual key bindings via a GUI overlay.",
+	"authors": [
+		"zenk"
+	],
+	"contact": {},
+	"license": "MIT",
+	"icon": "assets/virtualkeys/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"main": [
+			"dev.virtualkeys.VirtualKeysMod"
+		],
+		"client": [
+			"dev.virtualkeys.client.VirtualKeysClient"
+		]
+	},
+	"mixins": [
+		"virtualkeys.mixins.json",
+		{
+			"config": "virtualkeys.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"malilib": "*"
+	}
+}
