@@ -1,6 +1,6 @@
 # VirtualKeysMod
 
-Minecraftでホットキーに割り当てるためのキーが足りなくなったプレイヤーや、複雑なキーバインドを整理したい方のために，仮想キー（Virtual Key）」を追加する Fabric Mod です。
+Minecraftでホットキーに割り当てるためのキーが足りなくなったプレイヤーや、複雑なキーバインドを整理したい方のために，仮想キー（Virtual Key）を追加する Fabric Mod です。
 
 ## 機能
 
