@@ -1,4 +1,4 @@
-# VirtualKeysMod
+# VirtualKeys
 
 A client-side Fabric mod that adds an on-screen virtual key panel (GUI overlay) to Minecraft, designed for players who run out of physical hotkeys or want to organize complex keybindings cleanly.
 
