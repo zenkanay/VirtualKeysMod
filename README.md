@@ -1,19 +1,10 @@
-# VirtualKeys
+# VirtualKeysMod
 
-A client-side Fabric mod that adds an on-screen virtual key panel (GUI overlay) to Minecraft, designed for players who run out of physical hotkeys or want to organize complex keybindings cleanly.
+This repository contains the source code for the **VirtualKeys** mod, which adds an on-screen virtual key panel (GUI overlay) to Minecraft.
 
-## Features
+It is available for both **Fabric** and **Forge**:
 
-Please watch [this video](https://youtu.be/So0EKyhCUyM?si=BwmiHPsH7gl8l_Z0) to see how it works.
+*   [**Fabric Version**](./fabric) (Minecraft 1.21.1)
+*   [**Forge Version**](./forge) (Minecraft 1.20.1)
 
-## Requirements
-
-*   **Minecraft**: `1.21.11`
-*   **Mod Loader**: `Fabric` (Fabric Loader `0.19.3` or higher)
-*   **Dependencies**:
-    *   `Fabric API`
-    *   *(Highly Recommended)* `maLiLib` (to bind virtual keys inside Tweakeroo, Litematica, etc.)
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+Please refer to the respective subdirectories for development, features, and requirements.
