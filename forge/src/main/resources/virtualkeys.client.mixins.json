@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "dev.virtualkeys.client.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"refMap": "virtualkeys.refmap.json",
+	"mixins": [
+		"KeyMappingMixin",
+		"InputConstantsKeyMixin",
+		"InputConstantsMixin",
+		"KeyCodesMixin"
+	],
+	"injectors": {
+		"defaultRequire": 0
+	}
+}
