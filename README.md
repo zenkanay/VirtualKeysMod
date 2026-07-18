@@ -4,7 +4,7 @@ This repository contains the source code for the **VirtualKeys** mod, which adds
 
 It is available for both **Fabric** and **Forge**:
 
-*   [**Fabric Version**](./fabric) (Minecraft 1.21.1)
+*   [**Fabric Version**](./fabric) (Minecraft 1.21.11)
 *   [**Forge Version**](./forge) (Minecraft 1.20.1)
 
 Please refer to the respective subdirectories for development, features, and requirements.
