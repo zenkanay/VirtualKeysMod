@@ -11,7 +11,7 @@ Please watch [this video](https://youtu.be/So0EKyhCUyM?si=BwmiHPsH7gl8l_Z0) to s
 *   **Minecraft**: `1.20.1`
 *   **Mod Loader**: `Forge` (Forge `47.1.0` or higher)
 *   **Dependencies**:
-    *   *(Highly Recommended)* [mafglib](https://modrinth.com/mod/mafglib) (to bind virtual keys inside Forge Tweakeroo, Litematica, etc.)
+    *   *(Highly Recommended)* `mafglib` (to bind virtual keys inside Forge Tweakeroo, Litematica, etc.)
 
 ## License
 
