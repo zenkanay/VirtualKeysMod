@@ -11,8 +11,8 @@ Please watch [this video](https://youtu.be/So0EKyhCUyM?si=BwmiHPsH7gl8l_Z0) to s
 *   **Minecraft**: `1.21.11`
 *   **Mod Loader**: `Fabric` (Fabric Loader `0.19.3` or higher)
 *   **Dependencies**:
-    *   `Fabric API`
-    *   *(Highly Recommended)* `maLiLib` (to bind virtual keys inside Tweakeroo, Litematica, etc.)
+    *   [Fabric API](https://modrinth.com/mod/fabric-api) (Required)
+    *   *(Highly Recommended)* [maLiLib](https://modrinth.com/mod/malilib) (to bind virtual keys inside Tweakeroo, Litematica, etc.)
 
 ## License
 
