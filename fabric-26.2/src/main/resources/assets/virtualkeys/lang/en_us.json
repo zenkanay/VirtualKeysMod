@@ -1,0 +1,7 @@
+{
+  "key.virtualkeys.open_gui": "Open VirtualKeys Panel",
+  "key.virtualkeys.always_open_gui": "Open VirtualKeys Panel (Always)",
+  "category.virtualkeys": "VirtualKeys",
+  "key.category.virtualkeys.category": "VirtualKeys",
+  "gui.virtualkeys.title": "VirtualKeys"
+}

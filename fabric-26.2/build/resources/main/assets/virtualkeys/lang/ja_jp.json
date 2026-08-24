@@ -1,0 +1,7 @@
+{
+  "key.virtualkeys.open_gui": "VirtualKeysパネルを開く",
+  "key.virtualkeys.always_open_gui": "VirtualKeysパネルを開く（常時）",
+  "category.virtualkeys": "VirtualKeys",
+  "key.category.virtualkeys.category": "VirtualKeys",
+  "gui.virtualkeys.title": "VirtualKeys"
+}
