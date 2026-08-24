@@ -1,0 +1,15 @@
+.gradle/
+build/
+bin/
+run/
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+out/
+fabric/
+fabric-26.2/
+forge/
