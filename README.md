@@ -1,4 +1,4 @@
-# VirtualKeys (Fabric 26.2)
+# VirtualKeys (Fabric 1.21.11)
 
 A Minecraft mod that displays a customizable on-screen virtual keyboard overlay for mouse and accessibility controls.
 
@@ -6,7 +6,7 @@ A Minecraft mod that displays a customizable on-screen virtual keyboard overlay 
 
 * **Customizable Overlay**: Move and customize on-screen virtual keys (WASD, Sprint, Jump, Sneak, etc.).
 * **Key Editing**: Edit key labels and rebind virtual keys via the in-game gear menu.
-* **Smooth Gameplay**: Seamless player movement and sprinting while opening/using the panel without flickering.
+* **Smooth Gameplay**: Seamless player movement while opening/using the panel.
 
 ## Controls
 
