@@ -39,7 +39,7 @@ public class KeyboardHandlerMixin {
                         if (mc.gui.screen() != null) {
                             VirtualKeysClient.openOverlay(mc.gui.screen());
                         } else {
-                            mc.setScreenAndShow(new VirtualKeyScreen(null));
+                            mc.gui.setScreen(new VirtualKeyScreen(null));
                         }
                     }
                 }
@@ -62,7 +62,7 @@ public class KeyboardHandlerMixin {
                         if (mc.gui.screen() != null) {
                             VirtualKeysClient.openOverlay(mc.gui.screen());
                         } else {
-                            mc.setScreenAndShow(new VirtualKeyScreen(null));
+                            mc.gui.setScreen(new VirtualKeyScreen(null));
                         }
                     }
                 }

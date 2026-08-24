@@ -487,7 +487,7 @@ public class VirtualKeyScreen extends Screen {
                     Minecraft mc = Minecraft.getInstance();
                     if (mc.gui.screen() != this) {
                         dev.virtualkeys.client.VirtualKeysClient.closeOverlay();
-                        mc.setScreenAndShow(this);
+                        mc.gui.setScreen(this);
                     }
                 }
                 recalcLayout();
@@ -770,7 +770,7 @@ public class VirtualKeyScreen extends Screen {
         if (dev.virtualkeys.client.VirtualKeysClient.overlayActive && dev.virtualkeys.client.VirtualKeysClient.overlayScreen == this) {
             dev.virtualkeys.client.VirtualKeysClient.closeOverlay();
         } else {
-            Minecraft.getInstance().setScreenAndShow(parentScreen);
+            Minecraft.getInstance().gui.setScreen(parentScreen);
         }
     }
 

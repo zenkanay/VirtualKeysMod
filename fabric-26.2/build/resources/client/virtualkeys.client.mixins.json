@@ -10,7 +10,7 @@
 		"MouseHandlerMixin",
 		"InputConstantsMixin",
 		"KeyCodesMixin",
-		"MinecraftMixin"
+		"GuiMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0
