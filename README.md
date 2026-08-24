@@ -1,20 +1,15 @@
-# VirtualKeys (Forge 1.20.1)
+# VirtualKeys
 
-A Minecraft mod that displays a customizable on-screen virtual keyboard overlay for mouse and accessibility controls.
+**VirtualKeys** is a client-side Fabric mod that adds an on-screen virtual key panel (GUI overlay) to Minecraft. It is designed for players who run out of physical hotkeys or want to organize complex keybindings cleanly, especially when using utility mods.
 
 ## Features
 
-* **Customizable Overlay**: Move and customize on-screen virtual keys (WASD, Sprint, Jump, Sneak, etc.).
-* **Key Editing**: Edit key labels and rebind virtual keys via the in-game gear menu.
-* **Smooth Gameplay**: Seamless player movement while opening/using the panel.
+* **Virtual Key Panel (Overlay UI)**: Open an overlay screen on top of other active GUIs. Simply click a virtual key with your mouse to trigger its action.
+* **maLiLib Integration**: Seamlessly integrates with **maLiLib**'s keycode registry. You can bind these virtual keys to settings in Tweakeroo, Litematica, or other maLiLib-based mods just like physical keyboard keys.
+* **In-Game Customization**: Dynamically add, rename, or delete virtual keys right from the overlay configuration panel in-game.
 
-## Controls
+## How to Use
 
-* **`V`**: Open / Close the virtual key panel
-* **`H`**: Hold to show the panel
-
-## Branches
-
-* [fabric_26.2](https://github.com/zenkanay/VirtualKeysMod/tree/fabric_26.2) - Minecraft 26.2 (Fabric)
-* [fabric_1.21.11](https://github.com/zenkanay/VirtualKeysMod/tree/fabric_1.21.11) - Minecraft 1.21.11 (Fabric)
-* [forge_1.20.1](https://github.com/zenkanay/VirtualKeysMod/tree/forge_1.20.1) - Minecraft 1.20.1 (Forge)
+1. Press the bound hotkey (customizable in Minecraft's standard Controls menu) to open the **VirtualKeys Panel**.
+2. Customize your keys: Add new keys, rename them to match their functions (e.g., "Freecam", "Fast Place"), and arrange them.
+3. Simply click any key on the panel to simulate the corresponding GLFW key press/release event to the game or parent screen.
