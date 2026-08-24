@@ -20,6 +20,13 @@ public class ScreenMixin {
         }
     }
 
+    @Inject(method = "extractTransparentBackground", at = @At("HEAD"), cancellable = true)
+    private void onExtractTransparentBackground(GuiGraphicsExtractor guiGraphicsExtractor, CallbackInfo ci) {
+        if (Minecraft.getInstance().gui.screen() instanceof VirtualKeyScreen || VirtualKeysClient.overlayActive) {
+            ci.cancel();
+        }
+    }
+
     @Inject(method = "extractRenderStateWithTooltipAndSubtitles", at = @At("TAIL"))
     private void onExtractRenderStateWithTooltipAndSubtitles(GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (VirtualKeysClient.overlayActive && VirtualKeysClient.overlayScreen != null && (Object)this != VirtualKeysClient.overlayScreen) {

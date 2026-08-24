@@ -66,9 +66,36 @@ public class VirtualKeyScreen extends Screen {
         return parentScreen != null && parentScreen.isPauseScreen();
     }
 
+    // ── 背景・フェードインの抑制 ──────────────────────────────────
+
     @Override
     public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
-        // 背景のぼかしやグラデーションを描画しない
+        // 背景を描画しない
+    }
+
+    @Override
+    protected void extractBlurredBackground(GuiGraphicsExtractor g) {
+        // ブラー背景を描画しない
+    }
+
+    @Override
+    protected void extractMenuBackground(GuiGraphicsExtractor g) {
+        // メニュー背景を描画しない
+    }
+
+    @Override
+    protected void extractMenuBackground(GuiGraphicsExtractor g, int x, int y, int w, int h) {
+        // メニュー背景を描画しない
+    }
+
+    @Override
+    public void extractTransparentBackground(GuiGraphicsExtractor g) {
+        // 透明暗転背景を描画しない
+    }
+
+    @Override
+    protected void fadeWidgets(float delta) {
+        // フェードインアニメーションを無効化
     }
 
     @Override
@@ -78,7 +105,7 @@ public class VirtualKeyScreen extends Screen {
 
         this.nameEditBox = new net.minecraft.client.gui.components.EditBox(
             this.font,
-            0, 0, 100, 12,
+            0, 0, 100, 14,
             Component.literal("Key Name")
         ) {
             @Override
@@ -111,7 +138,7 @@ public class VirtualKeyScreen extends Screen {
                 }
             }
         });
-        this.addWidget(this.nameEditBox);
+        this.addRenderableWidget(this.nameEditBox);
 
         // ボタンの列数を設定ファイルから復元
         buttonsPerRow = VirtualKeysConfig.INSTANCE.keysPerRow;
@@ -149,6 +176,21 @@ public class VirtualKeyScreen extends Screen {
         // 画面外にはみ出さないようクランプ
         panelX = Math.max(0, Math.min(panelX, this.width - panelW));
         panelY = Math.max(0, Math.min(panelY, this.height - panelH));
+
+        // EditBoxの位置更新
+        updateEditBoxPosition();
+    }
+
+    private void updateEditBoxPosition() {
+        if (this.nameEditBox != null) {
+            int sx = getSettingsX();
+            int sy = getSettingsY();
+            int sw = getSettingsW();
+            int y2 = sy + PANEL_PADDING + 30 + 18;
+            this.nameEditBox.setX(sx + PANEL_PADDING);
+            this.nameEditBox.setY(y2);
+            this.nameEditBox.setWidth(sw - PANEL_PADDING * 2);
+        }
     }
 
     private int getSettingsW() {
@@ -220,19 +262,19 @@ public class VirtualKeyScreen extends Screen {
     // ── 描画ヘルパー ────────────────────────────────────────────
 
     private void drawString(GuiGraphicsExtractor g, Component text, int x, int y, int color) {
-        g.textRenderer().accept(x, y, text);
+        g.textRenderer().accept(x, y, text.copy().withStyle(s -> s.withColor(color & 0xFFFFFF)));
     }
 
     private void drawString(GuiGraphicsExtractor g, String text, int x, int y, int color) {
-        g.textRenderer().accept(x, y, Component.literal(text));
+        g.textRenderer().accept(x, y, Component.literal(text).withStyle(s -> s.withColor(color & 0xFFFFFF)));
     }
 
     private void drawCenteredString(GuiGraphicsExtractor g, String text, int x, int y, int color) {
-        g.textRenderer().accept(TextAlignment.CENTER, x, y, Component.literal(text));
+        g.textRenderer().accept(TextAlignment.CENTER, x, y, Component.literal(text).withStyle(s -> s.withColor(color & 0xFFFFFF)));
     }
 
     private void drawCenteredString(GuiGraphicsExtractor g, Component text, int x, int y, int color) {
-        g.textRenderer().accept(TextAlignment.CENTER, x, y, text);
+        g.textRenderer().accept(TextAlignment.CENTER, x, y, text.copy().withStyle(s -> s.withColor(color & 0xFFFFFF)));
     }
 
     // ── 描画 ────────────────────────────────────────────────────
@@ -243,12 +285,14 @@ public class VirtualKeyScreen extends Screen {
             settingsX = (int) (mouseX - dragOffsetX);
             settingsY = (int) (mouseY - dragOffsetY);
             clampSettingsPosition();
+            updateEditBoxPosition();
         }
 
         // Synchronize nameEditBox visibility and values based on editing states
         boolean showEditBox = settingsModeActive && activeTab == 1 && selectedKeyIndex >= 0 && selectedKeyIndex < VirtualKeyDefinition.ALL.size();
         if (this.nameEditBox != null) {
             if (showEditBox) {
+                updateEditBoxPosition();
                 if (!this.nameEditBox.isVisible()) {
                     this.nameEditBox.setVisible(true);
                     this.nameEditBox.setValue(VirtualKeyDefinition.ALL.get(selectedKeyIndex).label);
@@ -473,6 +517,13 @@ public class VirtualKeyScreen extends Screen {
             if (idx >= 0) {
                 if (settingsModeActive && activeTab == 1) {
                     selectedKeyIndex = idx;
+                    if (this.nameEditBox != null) {
+                        this.nameEditBox.setValue(VirtualKeyDefinition.ALL.get(selectedKeyIndex).label);
+                        this.nameEditBox.setVisible(true);
+                        this.nameEditBox.setFocused(true);
+                        this.setFocused(this.nameEditBox);
+                        this.nameEditBox.setCursorPosition(this.nameEditBox.getValue().length());
+                    }
                 } else {
                     clickedKeyIndex = idx;
                 }
@@ -618,6 +669,13 @@ public class VirtualKeyScreen extends Screen {
                 selectedKeyIndex = VirtualKeyDefinition.ALL.size() - 1;
                 VirtualKeysConfig.save();
                 recalcLayout();
+                if (this.nameEditBox != null) {
+                    this.nameEditBox.setValue(newDef.label);
+                    this.nameEditBox.setVisible(true);
+                    this.nameEditBox.setFocused(true);
+                    this.setFocused(this.nameEditBox);
+                    this.nameEditBox.setCursorPosition(this.nameEditBox.getValue().length());
+                }
                 return true;
             }
 
