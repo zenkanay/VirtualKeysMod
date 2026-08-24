@@ -1,39 +1,20 @@
 # VirtualKeys (Forge 1.20.1)
 
-画面上にカスタマイズ可能な仮想キーボードパネルを表示し、マウス操作やキー入力支援を行う Minecraft 1.20.1 向け Forge Mod です。
+A Minecraft mod that displays a customizable on-screen virtual keyboard overlay for mouse and accessibility controls.
 
----
+## Features
 
-## 📋 Requirements (必要環境)
+* **Customizable Overlay**: Move and customize on-screen virtual keys (WASD, Sprint, Jump, Sneak, etc.).
+* **Key Editing**: Edit key labels and rebind virtual keys via the in-game gear menu.
+* **Smooth Gameplay**: Seamless player movement while opening/using the panel.
 
-* **Minecraft**: `1.20.1`
-* **Mod Loader**: `Forge` (47.3.0 以降)
-* **Java**: `17` 以上
-* **Dependencies**: なし (Standalone)
+## Controls
 
----
+* **`V`**: Open / Close the virtual key panel
+* **`H`**: Hold to show the panel
 
-## ✨ Features (主な機能)
+## Branches
 
-* **仮想キーパネル表示**:
-  * 画面上に自由な配置・整列（左寄せ・中央・右寄せなど）で仮想キーを表示。
-  * 移動、ジャンプ、ダッシュ、スニークなどをパネルを開いたままシームレスに操作可能。
-* **キーカスタマイズ**:
-  * 画面上の歯車アイコンからキー名の編集、キー配置の変更が可能。
-* **シームレスな操作性**:
-  * 歩きながらのパネル開閉に対応。
-
----
-
-## ⌨️ Controls (デフォルト操作)
-
-* **`V` キー**: 仮想キーパネルを開く / 閉じる
-* **`H` キー**: パネルのホールド表示（押している間だけ表示）
-
----
-
-## 🌿 Available Branches (他バージョン)
-
-* [fabric_26.2](https://github.com/zenkanay/VirtualKeysMod/tree/fabric_26.2) (Minecraft 26.2 / Fabric)
-* [fabric_1.21.11](https://github.com/zenkanay/VirtualKeysMod/tree/fabric_1.21.11) (Minecraft 1.21.11 / Fabric)
-* [forge_1.20.1](https://github.com/zenkanay/VirtualKeysMod/tree/forge_1.20.1) (Minecraft 1.20.1 / Forge)
+* [fabric_26.2](https://github.com/zenkanay/VirtualKeysMod/tree/fabric_26.2) - Minecraft 26.2 (Fabric)
+* [fabric_1.21.11](https://github.com/zenkanay/VirtualKeysMod/tree/fabric_1.21.11) - Minecraft 1.21.11 (Fabric)
+* [forge_1.20.1](https://github.com/zenkanay/VirtualKeysMod/tree/forge_1.20.1) - Minecraft 1.20.1 (Forge)
