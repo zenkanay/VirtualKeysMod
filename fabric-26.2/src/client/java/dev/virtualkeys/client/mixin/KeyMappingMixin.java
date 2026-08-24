@@ -18,6 +18,9 @@ public class KeyMappingMixin {
     @Shadow
     protected InputConstants.Key key;
 
+    @Shadow
+    private boolean isDown;
+
     @Inject(method = "isDown", at = @At("HEAD"), cancellable = true)
     private void onIsDown(CallbackInfoReturnable<Boolean> cir) {
         Minecraft mc = Minecraft.getInstance();
@@ -29,19 +32,31 @@ public class KeyMappingMixin {
         }
 
         if (mc.gui.screen() instanceof VirtualKeyScreen || VirtualKeysClient.overlayActive) {
+            // トグルダッシュ等で isDown フィールドが true の場合は維持する
+            if (this.isDown) {
+                cir.setReturnValue(true);
+                return;
+            }
+
             if (this.key != null) {
                 int code = this.key.getValue();
                 if (code != InputConstants.UNKNOWN.getValue()) {
                     if (this.key.getType() == InputConstants.Type.KEYSYM) {
                         boolean down = InputConstants.isKeyDown(mc.getWindow(), code) || VirtualKeysClient.isVirtualKeyDown(code);
-                        cir.setReturnValue(down);
+                        if (down) {
+                            cir.setReturnValue(true);
+                        }
                     } else if (this.key.getType() == InputConstants.Type.MOUSE) {
                         long handle = mc.getWindow().handle();
                         boolean down = GLFW.glfwGetMouseButton(handle, code) == GLFW.GLFW_PRESS;
-                        cir.setReturnValue(down);
+                        if (down) {
+                            cir.setReturnValue(true);
+                        }
                     } else if (this.key.getType() == InputConstants.Type.SCANCODE) {
                         boolean down = InputConstants.isKeyDown(mc.getWindow(), code);
-                        cir.setReturnValue(down);
+                        if (down) {
+                            cir.setReturnValue(true);
+                        }
                     }
                 }
             }
