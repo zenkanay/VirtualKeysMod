@@ -1,7 +1,9 @@
 package dev.virtualkeys.client.mixin;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.virtualkeys.client.VirtualKeysClient;
 import dev.virtualkeys.client.VirtualKeyScreen;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.CharacterEvent;
@@ -76,7 +78,19 @@ public class KeyboardHandlerMixin {
             if (action == GLFW.GLFW_PRESS || action == GLFW.GLFW_REPEAT) {
                 if (VirtualKeysClient.overlayScreen.keyPressed(event)) {
                     ci.cancel();
+                    return;
                 }
+            }
+        }
+
+        // パネルを開いている最中でも、文字編集中でなければバニラのキーバインド（ダッシュ、移動、ジャンプなど）を更新する
+        if (!isEditing && (mc.gui.screen() instanceof VirtualKeyScreen || VirtualKeysClient.overlayActive)) {
+            InputConstants.Key inputKey = InputConstants.getKey(event);
+            if (action == GLFW.GLFW_PRESS) {
+                KeyMapping.set(inputKey, true);
+                KeyMapping.click(inputKey);
+            } else if (action == GLFW.GLFW_RELEASE) {
+                KeyMapping.set(inputKey, false);
             }
         }
     }
