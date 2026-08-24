@@ -10,7 +10,8 @@
 		"MouseHandlerMixin",
 		"InputConstantsMixin",
 		"KeyCodesMixin",
-		"GuiMixin"
+		"GuiMixin",
+		"ToggleKeyMappingMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0
