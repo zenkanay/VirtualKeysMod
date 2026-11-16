@@ -288,16 +288,21 @@ public class VirtualKeysClient {
 
     @SubscribeEvent
     public static void onScreenMouseReleased(ScreenEvent.MouseButtonReleased.Pre event) {
+        if (overlayCapturedPress && !(event.getScreen() instanceof VirtualKeyScreen)) {
+            if (overlayScreen != null) {
+                overlayScreen.handleMouseRelease(event.getMouseX(), event.getMouseY(), event.getButton());
+            }
+            overlayCapturedPress = false;
+            event.setCanceled(true);
+            return;
+        }
+
         if (overlayActive && overlayScreen != null && event.getScreen() != overlayScreen) {
             double mx = event.getMouseX();
             double my = event.getMouseY();
             int button = event.getButton();
 
-            if (overlayCapturedPress) {
-                overlayScreen.handleMouseRelease(mx, my, button);
-                overlayCapturedPress = false;
-                event.setCanceled(true);
-            } else if (overlayScreen.isMouseOverPanel(mx, my)) {
+            if (overlayScreen.isMouseOverPanel(mx, my)) {
                 overlayScreen.handleMouseRelease(mx, my, button);
                 // Optionally cancel if needed, but release events are usually fine
             }

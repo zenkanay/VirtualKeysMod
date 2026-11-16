@@ -17,14 +17,13 @@ public class KeyCodesMixin {
         }
     }
 
-    @Inject(method = "getKeyCodeFromName", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getKeyCodeFromName", at = @At("RETURN"), cancellable = true)
     private static void onGetKeyCodeFromName(String name, CallbackInfoReturnable<Integer> cir) {
-        if (name != null) {
-            for (VirtualKeyDefinition def : VirtualKeyDefinition.ALL) {
-                if (def.label.equalsIgnoreCase(name)) {
-                    cir.setReturnValue(def.glfwKey);
-                    return;
-                }
+        int ret = cir.getReturnValueI();
+        if (ret == -1 || ret == 0) {
+            Integer code = VirtualKeyDefinition.getCodeByName(name);
+            if (code != null) {
+                cir.setReturnValue(code);
             }
         }
     }
