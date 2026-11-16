@@ -46,4 +46,17 @@ public abstract class MouseHandlerMixin {
             VirtualKeysClient.overlayCapturedPress = false;
         }
     }
+
+    @Inject(method = "onScroll", at = @At("HEAD"), cancellable = true)
+    private void onOnScroll(long window, double xoffset, double yoffset, CallbackInfo ci) {
+        if (VirtualKeysClient.overlayActive && VirtualKeysClient.overlayScreen != null) {
+            double mx = this.getScaledXPos(this.minecraft.getWindow());
+            double my = this.getScaledYPos(this.minecraft.getWindow());
+            if (VirtualKeysClient.overlayScreen.isMouseOverPanel(mx, my)) {
+                if (VirtualKeysClient.overlayScreen.mouseScrolled(mx, my, xoffset, yoffset)) {
+                    ci.cancel();
+                }
+            }
+        }
+    }
 }
