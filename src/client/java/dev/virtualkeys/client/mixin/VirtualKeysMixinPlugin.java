@@ -24,7 +24,12 @@ public class VirtualKeysMixinPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (mixinClassName.endsWith(".KeyCodesMixin")) {
-            return VirtualKeysMixinPlugin.class.getClassLoader().getResource("fi/dy/masa/malilib/util/KeyCodes.class") != null;
+            ClassLoader cl = VirtualKeysMixinPlugin.class.getClassLoader();
+            if (cl != null && cl.getResource("fi/dy/masa/malilib/util/KeyCodes.class") != null) {
+                return true;
+            }
+            ClassLoader ctx = Thread.currentThread().getContextClassLoader();
+            return ctx != null && ctx.getResource("fi/dy/masa/malilib/util/KeyCodes.class") != null;
         }
         return true;
     }

@@ -21,6 +21,17 @@ public abstract class MouseHandlerMixin {
 
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
     private void onOnButton(long window, MouseButtonInfo info, int action, CallbackInfo ci) {
+        if (action == 0 && VirtualKeysClient.overlayCapturedPress) { // GLFW_RELEASE = 0
+            if (VirtualKeysClient.overlayScreen != null) {
+                double mx = this.getScaledXPos(this.minecraft.getWindow());
+                double my = this.getScaledYPos(this.minecraft.getWindow());
+                VirtualKeysClient.overlayScreen.handleMouseRelease(mx, my, info.button());
+            }
+            VirtualKeysClient.overlayCapturedPress = false;
+            ci.cancel();
+            return;
+        }
+
         if (VirtualKeysClient.overlayActive && VirtualKeysClient.overlayScreen != null) {
             double mx = this.getScaledXPos(this.minecraft.getWindow());
             double my = this.getScaledYPos(this.minecraft.getWindow());
@@ -31,14 +42,8 @@ public abstract class MouseHandlerMixin {
                     VirtualKeysClient.overlayCapturedPress = true;
                     ci.cancel();
                 }
-            } else if (action == 0) { // GLFW_RELEASE = 0
-                if (VirtualKeysClient.overlayCapturedPress) {
-                    VirtualKeysClient.overlayScreen.handleMouseRelease(mx, my, info.button());
-                    VirtualKeysClient.overlayCapturedPress = false;
-                    ci.cancel();
-                } else if (VirtualKeysClient.overlayScreen.isMouseOverPanel(mx, my)) {
-                    VirtualKeysClient.overlayScreen.handleMouseRelease(mx, my, info.button());
-                }
+            } else if (action == 0 && VirtualKeysClient.overlayScreen.isMouseOverPanel(mx, my)) {
+                VirtualKeysClient.overlayScreen.handleMouseRelease(mx, my, info.button());
             }
         } else {
             // If overlay is not active but the press flag was somehow left true, clear it
