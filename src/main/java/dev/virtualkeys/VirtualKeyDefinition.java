@@ -30,6 +30,25 @@ public class VirtualKeyDefinition {
         return null;
     }
 
+    /**
+     * 仮想キーの表示名（大文字小文字・前後空白無視）からキーコードを逆引きする。
+     */
+    public static Integer getCodeByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        String trimmed = name.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        for (VirtualKeyDefinition def : ALL) {
+            if (def.label != null && def.label.equalsIgnoreCase(trimmed)) {
+                return def.glfwKey;
+            }
+        }
+        return null;
+    }
+
     public static void updateFromConfig(List<String> keyLabels) {
         ALL.clear();
         int code = 401;
@@ -81,10 +100,14 @@ public class VirtualKeyDefinition {
         tryRegisterToMalilib();
     }
 
+    private static final java.util.Map<String, Set<Integer>> REGISTERED_MALILIB_CODES = new java.util.HashMap<>();
+    private static final java.util.Map<String, Set<String>> REGISTERED_MALILIB_NAMES = new java.util.HashMap<>();
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void tryRegisterToMalilib() {
+        String className = "fi.dy.masa.malilib.util.KeyCodes";
         try {
-            Class<?> keyCodesClass = Class.forName("fi.dy.masa.malilib.util.KeyCodes");
+            Class<?> keyCodesClass = Class.forName(className);
             java.lang.reflect.Field mapKeyToNameField = keyCodesClass.getDeclaredField("MAP_KEY_TO_NAME");
             java.lang.reflect.Field mapNameToKeyField = keyCodesClass.getDeclaredField("MAP_NAME_TO_KEY");
             mapKeyToNameField.setAccessible(true);
@@ -94,16 +117,27 @@ public class VirtualKeyDefinition {
             java.util.Map mapNameToKey = (java.util.Map) mapNameToKeyField.get(null);
 
             if (mapKeyToName != null && mapNameToKey != null) {
-                for (int c = 401; c <= 2000; c++) {
-                    Object name = mapKeyToName.remove(c);
-                    if (name instanceof String) {
-                        mapNameToKey.remove(name);
-                    }
+                Set<Integer> prevCodes = REGISTERED_MALILIB_CODES.computeIfAbsent(className, k -> new HashSet<>());
+                Set<String> prevNames = REGISTERED_MALILIB_NAMES.computeIfAbsent(className, k -> new HashSet<>());
+
+                for (Integer prevCode : prevCodes) {
+                    mapKeyToName.remove(prevCode);
                 }
+                for (String prevName : prevNames) {
+                    mapNameToKey.remove(prevName);
+                }
+                prevCodes.clear();
+                prevNames.clear();
 
                 for (VirtualKeyDefinition def : ALL) {
-                    mapKeyToName.put(def.glfwKey, def.label);
-                    mapNameToKey.put(def.label, def.glfwKey);
+                    if (!mapKeyToName.containsKey(def.glfwKey)) {
+                        mapKeyToName.put(def.glfwKey, def.label);
+                        prevCodes.add(def.glfwKey);
+                    }
+                    if (def.label != null && !def.label.isEmpty() && !mapNameToKey.containsKey(def.label)) {
+                        mapNameToKey.put(def.label, def.glfwKey);
+                        prevNames.add(def.label);
+                    }
                 }
                 System.out.println("[VirtualKeys] Registered " + ALL.size() + " keys to Malilib's KeyCodes map.");
             }

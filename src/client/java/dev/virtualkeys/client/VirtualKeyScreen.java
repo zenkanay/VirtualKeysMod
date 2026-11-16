@@ -1235,7 +1235,8 @@ public class VirtualKeyScreen extends Screen {
             java.lang.reflect.Method m = cachedOnKeyMethod;
             if (m != null) {
                 m.setAccessible(true);
-                int scancode = GLFW.glfwGetKeyScancode(glfwKey);
+                int scancode = VirtualKeyDefinition.getByCode(glfwKey) != null ? 0 : GLFW.glfwGetKeyScancode(glfwKey);
+                MalilibCompat.clearMouseButtonsFromPressedKeys();
                 VirtualKeysClient.setVirtualKeyDown(glfwKey, true);
 
                 try {
