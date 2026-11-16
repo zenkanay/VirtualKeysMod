@@ -304,6 +304,19 @@ public class VirtualKeysClient {
         }
     }
 
+    @SubscribeEvent
+    public static void onScreenMouseScrolled(ScreenEvent.MouseScrolled.Pre event) {
+        if (overlayActive && overlayScreen != null && event.getScreen() != overlayScreen) {
+            double mx = event.getMouseX();
+            double my = event.getMouseY();
+            if (overlayScreen.isMouseOverPanel(mx, my)) {
+                if (overlayScreen.mouseScrolled(mx, my, event.getScrollDelta())) {
+                    event.setCanceled(true);
+                }
+            }
+        }
+    }
+
     // 5. Overlay Rendering (Frontmost Z-axis)
     @SubscribeEvent
     public static void onScreenRenderPost(ScreenEvent.Render.Post event) {
