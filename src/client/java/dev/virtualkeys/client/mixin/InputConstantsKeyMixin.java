@@ -13,13 +13,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class InputConstantsKeyMixin {
 
     @Shadow
+    private InputConstants.Type type;
+
+    @Shadow
     private int value;
 
     @Inject(method = "getDisplayName", at = @At("HEAD"), cancellable = true)
     private void onGetDisplayName(CallbackInfoReturnable<Component> cir) {
-        VirtualKeyDefinition def = VirtualKeyDefinition.getByCode(this.value);
-        if (def != null) {
-            cir.setReturnValue(Component.literal(def.label));
+        if (this.type == InputConstants.Type.KEYBOARD) {
+            VirtualKeyDefinition def = VirtualKeyDefinition.getByCode(this.value);
+            if (def != null) {
+                cir.setReturnValue(Component.literal(def.label));
+            }
         }
     }
 }

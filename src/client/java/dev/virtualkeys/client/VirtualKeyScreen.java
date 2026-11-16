@@ -3,22 +3,21 @@ package dev.virtualkeys.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.virtualkeys.VirtualKeyDefinition;
 import dev.virtualkeys.VirtualKeysConfig;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * VirtualKeyScreen
  *
  * 他のGUIが開いている状態で重ねて表示できる仮想キーパネル。
  * ボタンをクリックすると、このパネルを閉じ、復元された親画面に対して
- * 仮想キーの GLFW key press / release イベントを発火する。
+ * 仮想キーの key press / release イベントを発火する。
  */
 public class VirtualKeyScreen extends Screen {
 
@@ -44,12 +43,7 @@ public class VirtualKeyScreen extends Screen {
     private double dragOffsetY = 0;
     private int clickedKeyIndex = -1;
 
-    private static java.lang.reflect.Method cachedOnKeyMethod = null;
-    private static boolean checkedOnKeyMethod = false;
-    private static java.lang.reflect.Constructor<?> cachedKeyEventConstructor = null;
-    private static boolean checkedKeyEventConstructor = false;
-
-    private net.minecraft.client.gui.components.EditBox nameEditBox;
+    private EditBox nameEditBox;
 
     public VirtualKeyScreen(Screen parentScreen) {
         super(Component.translatable("gui.virtualkeys.title"));
@@ -61,9 +55,36 @@ public class VirtualKeyScreen extends Screen {
         return parentScreen != null && parentScreen.isPauseScreen();
     }
 
+    // ── 背景・フェードインの抑制 ──────────────────────────────────
+
     @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
         // 背景のぼかしやグラデーションを描画しない
+    }
+
+    @Override
+    protected void extractBlurredBackground(GuiGraphicsExtractor g) {
+        // ブラー背景を描画しない
+    }
+
+    @Override
+    protected void extractMenuBackground(GuiGraphicsExtractor g) {
+        // メニュー背景を描画しない
+    }
+
+    @Override
+    protected void extractMenuBackground(GuiGraphicsExtractor g, int x, int y, int w, int h) {
+        // メニュー背景を描画しない
+    }
+
+    @Override
+    public void extractTransparentBackground(GuiGraphicsExtractor g) {
+        // 透明暗転背景を描画しない
+    }
+
+    @Override
+    protected void fadeWidgets(float delta) {
+        // フェードインアニメーションを無効化
     }
 
     @Override
@@ -71,25 +92,21 @@ public class VirtualKeyScreen extends Screen {
         VirtualKeysConfig.load(); // パネルを開いたタイミングでconfigを動的再ロード
         super.init();
 
-        this.nameEditBox = new net.minecraft.client.gui.components.EditBox(
+        this.nameEditBox = new EditBox(
             this.font,
-            0, 0, 100, 12,
+            0, 0, 100, 14,
             Component.literal("Key Name")
         ) {
             @Override
             public boolean keyPressed(KeyEvent event) {
-                if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+                if (event.key() == InputConstants.KEY_ESCAPE
+                        || event.key() == InputConstants.KEY_RETURN
+                        || event.key() == InputConstants.KEY_NUMPADENTER) {
                     selectedKeyIndex = -1;
                     this.setFocused(false);
                     VirtualKeyScreen.this.setFocused(null);
-                    super.keyPressed(event);
-                    return true;
-                }
-                if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
-                    selectedKeyIndex = -1;
-                    this.setFocused(false);
-                    VirtualKeyScreen.this.setFocused(null);
-                    super.keyPressed(event);
+                    VirtualKeyDefinition.updateFromConfig(VirtualKeysConfig.INSTANCE.keys);
+                    VirtualKeysConfig.save();
                     return true;
                 }
                 return super.keyPressed(event);
@@ -156,6 +173,10 @@ public class VirtualKeyScreen extends Screen {
             clampSettingsPosition();
         }
 
+        updateEditBoxPosition();
+    }
+
+    private void updateEditBoxPosition() {
         if (this.nameEditBox != null) {
             int sx = getSettingsX();
             int sy = getSettingsY();
@@ -164,7 +185,17 @@ public class VirtualKeyScreen extends Screen {
             this.nameEditBox.setX(sx + PANEL_PADDING);
             this.nameEditBox.setY(y2);
             this.nameEditBox.setWidth(sw - PANEL_PADDING * 2);
-            this.nameEditBox.setHeight(12);
+            this.nameEditBox.setHeight(14);
+        }
+    }
+
+    private void focusNameEditBox(String label) {
+        if (this.nameEditBox != null) {
+            this.nameEditBox.setValue(label);
+            this.nameEditBox.setVisible(true);
+            this.nameEditBox.setFocused(true);
+            this.setFocused(this.nameEditBox);
+            this.nameEditBox.setCursorPosition(this.nameEditBox.getValue().length());
         }
     }
 
@@ -232,23 +263,21 @@ public class VirtualKeyScreen extends Screen {
     // ── 描画 ────────────────────────────────────────────────────
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
         if (draggingSettings) {
             settingsX = (int) (mouseX - dragOffsetX);
             settingsY = (int) (mouseY - dragOffsetY);
             clampSettingsPosition();
+            updateEditBoxPosition();
         }
 
         // Synchronize nameEditBox visibility and values based on editing states
         boolean showEditBox = settingsModeActive && activeTab == 1 && selectedKeyIndex >= 0 && selectedKeyIndex < VirtualKeyDefinition.ALL.size();
         if (this.nameEditBox != null) {
             if (showEditBox) {
+                updateEditBoxPosition();
                 if (!this.nameEditBox.isVisible()) {
-                    this.nameEditBox.setVisible(true);
-                    this.nameEditBox.setValue(VirtualKeyDefinition.ALL.get(selectedKeyIndex).label);
-                    this.nameEditBox.setFocused(true);
-                    this.setFocused(this.nameEditBox);
-                    this.nameEditBox.setCursorPosition(this.nameEditBox.getValue().length());
+                    focusNameEditBox(VirtualKeyDefinition.ALL.get(selectedKeyIndex).label);
                 }
             } else {
                 if (this.nameEditBox.isVisible()) {
@@ -261,9 +290,9 @@ public class VirtualKeyScreen extends Screen {
             }
         }
 
-        // Overlay表示時（Minecraft.screen != this）は親画面の再描画をしない（親画面側で既に描画されているため）
-        if (parentScreen != null && Minecraft.getInstance().screen == this) {
-            parentScreen.render(g, -9999, -9999, delta);
+        // Overlay表示時（Minecraft.gui.screen() != this）は親画面の再描画をしない（親画面側で既に描画されているため）
+        if (parentScreen != null && Minecraft.getInstance().gui.screen() == this) {
+            parentScreen.extractRenderState(g, -9999, -9999, delta);
         }
 
         // シンプルな半透明の暗い背景 (メインのキーボードパネル)
@@ -271,17 +300,17 @@ public class VirtualKeyScreen extends Screen {
 
         // タイトルと歯車アイコンの描画（幅に合わせて文字を省略または非表示にして崩れを防ぐ）
         if (panelW >= 80) {
-            g.drawString(this.font, Component.translatable("gui.virtualkeys.title"), panelX + PANEL_PADDING, panelY + PANEL_PADDING + 2, 0xFFE0E0E0, false);
+            g.text(this.font, Component.translatable("gui.virtualkeys.title"), panelX + PANEL_PADDING, panelY + PANEL_PADDING + 2, 0xFFE0E0E0, false);
         } else if (panelW >= 40) {
-            g.drawString(this.font, "VKeys", panelX + PANEL_PADDING, panelY + PANEL_PADDING + 2, 0xFFE0E0E0, false);
+            g.text(this.font, "VKeys", panelX + PANEL_PADDING, panelY + PANEL_PADDING + 2, 0xFFE0E0E0, false);
         }
-        
+
         int gearW = 16;
         int gearH = 12;
         int gearX = panelX + panelW - PANEL_PADDING - gearW;
         int gearY = panelY + PANEL_PADDING;
         boolean gearHovered = mouseX >= gearX && mouseX < gearX + gearW && mouseY >= gearY && mouseY < gearY + gearH;
-        g.drawString(this.font, "⚙", gearX + (gearW - this.font.width("⚙")) / 2, gearY + (gearH - 8) / 2, gearHovered ? 0xFFFFFFFF : 0xFF888888, false);
+        g.text(this.font, "⚙", gearX + (gearW - this.font.width("⚙")) / 2, gearY + (gearH - 8) / 2, gearHovered ? 0xFFFFFFFF : 0xFF888888, false);
 
         hoveredIndex = -1;
         int numKeys = VirtualKeyDefinition.ALL.size();
@@ -312,7 +341,7 @@ public class VirtualKeyScreen extends Screen {
                 int textColor = (settingsModeActive && activeTab == 1 && selectedKeyIndex == i) ? 0xFFFFFFFF : (hovered ? 0xFFFFFFFF : 0xFFCCCCCC);
 
                 g.fill(bx, by, bx + buttonW, by + buttonH, bgColor);
-                g.drawCenteredString(this.font, VirtualKeyDefinition.ALL.get(i).label,
+                g.centeredText(this.font, VirtualKeyDefinition.ALL.get(i).label,
                     bx + buttonW / 2, by + (buttonH - 8) / 2, textColor);
             }
         }
@@ -328,7 +357,7 @@ public class VirtualKeyScreen extends Screen {
             g.fill(sx, sy, sx + sw, sy + sh, 0xD0121212);
 
             // 設定タイトル
-            g.drawString(this.font, "Settings", sx + PANEL_PADDING, sy + PANEL_PADDING + 2, 0xFFE0E0E0, false);
+            g.text(this.font, "Settings", sx + PANEL_PADDING, sy + PANEL_PADDING + 2, 0xFFE0E0E0, false);
 
             // タブ切り替えボタン
             int tabY = sy + PANEL_PADDING + 12;
@@ -341,31 +370,31 @@ public class VirtualKeyScreen extends Screen {
 
             if (activeTab == 0) {
                 // Row 1: H Align
-                g.drawString(this.font, "H:", sx + PANEL_PADDING, y1 + 4, 0xFFCCCCCC, false);
+                g.text(this.font, "H:", sx + PANEL_PADDING, y1 + 4, 0xFFCCCCCC, false);
                 drawButton(g, sx + 25, y1, 35, 14, "L", VirtualKeysConfig.INSTANCE.horizontalAlign == VirtualKeysConfig.HorizontalAlign.LEFT, mouseX, mouseY);
                 drawButton(g, sx + 65, y1, 45, 14, "C", VirtualKeysConfig.INSTANCE.horizontalAlign == VirtualKeysConfig.HorizontalAlign.CENTER, mouseX, mouseY);
                 drawButton(g, sx + 115, y1, 35, 14, "R", VirtualKeysConfig.INSTANCE.horizontalAlign == VirtualKeysConfig.HorizontalAlign.RIGHT, mouseX, mouseY);
 
                 // Row 2: V Align
-                g.drawString(this.font, "V:", sx + PANEL_PADDING, y2 + 4, 0xFFCCCCCC, false);
+                g.text(this.font, "V:", sx + PANEL_PADDING, y2 + 4, 0xFFCCCCCC, false);
                 drawButton(g, sx + 25, y2, 35, 14, "T", VirtualKeysConfig.INSTANCE.verticalAlign == VirtualKeysConfig.VerticalAlign.TOP, mouseX, mouseY);
                 drawButton(g, sx + 65, y2, 45, 14, "C", VirtualKeysConfig.INSTANCE.verticalAlign == VirtualKeysConfig.VerticalAlign.CENTER, mouseX, mouseY);
                 drawButton(g, sx + 115, y2, 35, 14, "B", VirtualKeysConfig.INSTANCE.verticalAlign == VirtualKeysConfig.VerticalAlign.BOTTOM, mouseX, mouseY);
 
                 // Row 3: Sizes (W, H, Gap, Keys/Row)
-                g.drawString(this.font, "W:", sx + PANEL_PADDING, y3 + 4, 0xFF999999, false);
+                g.text(this.font, "W:", sx + PANEL_PADDING, y3 + 4, 0xFF999999, false);
                 drawButton(g, sx + 20, y3, 10, 14, "-", false, mouseX, mouseY);
-                g.drawCenteredString(this.font, String.valueOf(buttonW), sx + 40, y3 + 4, 0xFFFFFFFF);
+                g.centeredText(this.font, String.valueOf(buttonW), sx + 40, y3 + 4, 0xFFFFFFFF);
                 drawButton(g, sx + 48, y3, 10, 14, "+", false, mouseX, mouseY);
 
-                g.drawString(this.font, "H:", sx + 65, y3 + 4, 0xFF999999, false);
+                g.text(this.font, "H:", sx + 65, y3 + 4, 0xFF999999, false);
                 drawButton(g, sx + 77, y3, 10, 14, "-", false, mouseX, mouseY);
-                g.drawCenteredString(this.font, String.valueOf(buttonH), sx + 97, y3 + 4, 0xFFFFFFFF);
+                g.centeredText(this.font, String.valueOf(buttonH), sx + 97, y3 + 4, 0xFFFFFFFF);
                 drawButton(g, sx + 105, y3, 10, 14, "+", false, mouseX, mouseY);
 
-                g.drawString(this.font, "Col:", sx + 122, y3 + 4, 0xFF999999, false);
+                g.text(this.font, "Col:", sx + 122, y3 + 4, 0xFF999999, false);
                 drawButton(g, sx + 145, y3, 10, 14, "-", false, mouseX, mouseY);
-                g.drawCenteredString(this.font, String.valueOf(buttonsPerRow), sx + 165, y3 + 4, 0xFFFFFFFF);
+                g.centeredText(this.font, String.valueOf(buttonsPerRow), sx + 165, y3 + 4, 0xFFFFFFFF);
                 drawButton(g, sx + 173, y3, 10, 14, "+", false, mouseX, mouseY);
             } else {
                 // Tab 1: Keys Editor
@@ -374,7 +403,7 @@ public class VirtualKeyScreen extends Screen {
 
                 // Row 2 & 3: Selection information or editing controls
                 if (selectedKeyIndex < 0 || selectedKeyIndex >= numKeys) {
-                    g.drawString(this.font, "Click a key to edit.", sx + PANEL_PADDING, y2 + 4, 0xFF888888, false);
+                    g.text(this.font, "Click a key to edit.", sx + PANEL_PADDING, y2 + 4, 0xFF888888, false);
                 } else {
                     // Row 2 is rendered automatically by standard nameEditBox widget, nothing custom to draw here.
 
@@ -386,10 +415,10 @@ public class VirtualKeyScreen extends Screen {
             }
         }
 
-        super.render(g, mouseX, mouseY, delta);
+        super.extractRenderState(g, mouseX, mouseY, delta);
     }
 
-    private void drawButton(GuiGraphics g, int x, int y, int w, int h, String text, boolean active, int mx, int my) {
+    private void drawButton(GuiGraphicsExtractor g, int x, int y, int w, int h, String text, boolean active, int mx, int my) {
         boolean hovered = mx >= x && mx < x + w && my >= y && my < y + h;
         int bgColor;
         if (active) {
@@ -399,17 +428,17 @@ public class VirtualKeyScreen extends Screen {
         }
         int textColor = active ? 0xFFFFFFFF : (hovered ? 0xFFFFFFFF : 0xFFCCCCCC);
         g.fill(x, y, x + w, y + h, bgColor);
-        g.drawCenteredString(this.font, text, x + w / 2, y + (h - 8) / 2, textColor);
+        g.centeredText(this.font, text, x + w / 2, y + (h - 8) / 2, textColor);
     }
 
-    // ── インプット処理 (1.21.11 の新シグネチャ) ──────────────────
+    // ── インプット処理 (26.3 SDL3 シグネチャ) ──────────────────
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean consumed) {
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             int mx = (int) event.x();
             int my = (int) event.y();
-            if (handleMouseClick(mx, my, event.button(), 1)) {
+            if (handleMouseClick(mx, my, event.button(), InputConstants.PRESS)) {
                 return true;
             }
         }
@@ -423,7 +452,7 @@ public class VirtualKeyScreen extends Screen {
     }
 
     public boolean handleMouseClick(double mx, double my, int button, int action) {
-        if (action == 1 && button == 0) {
+        if (action == InputConstants.PRESS && button == InputConstants.MOUSE_BUTTON_LEFT) {
             // 1. 歯車ボタンのクリック判定
             int gearW = 16;
             int gearH = 12;
@@ -435,9 +464,9 @@ public class VirtualKeyScreen extends Screen {
                     resetSettingsPosition();
                     // If running as an overlay, promote this screen to an active full screen to grab keyboard focus
                     Minecraft mc = Minecraft.getInstance();
-                    if (mc.screen != this) {
-                        dev.virtualkeys.client.VirtualKeysClient.closeOverlay();
-                        mc.setScreen(this);
+                    if (mc.gui.screen() != this) {
+                        VirtualKeysClient.closeOverlay();
+                        mc.gui.setScreen(this);
                     }
                 }
                 recalcLayout();
@@ -462,11 +491,21 @@ public class VirtualKeyScreen extends Screen {
                 return true;
             }
 
+            // 設定パネル内の他領域（nameEditBox 等）は super.mouseClicked に委譲し、背後のキーに貫通させない
+            if (settingsModeActive) {
+                int sx = getSettingsX();
+                int sy = getSettingsY();
+                if (mx >= sx && mx < sx + getSettingsW() && my >= sy && my < sy + getSettingsH()) {
+                    return false;
+                }
+            }
+
             // 4. 仮想キーのクリック判定
-            int idx = getButtonAt((int)mx, (int)my);
+            int idx = getButtonAt((int) mx, (int) my);
             if (idx >= 0) {
                 if (settingsModeActive && activeTab == 1) {
                     selectedKeyIndex = idx;
+                    focusNameEditBox(VirtualKeyDefinition.ALL.get(idx).label);
                 } else {
                     clickedKeyIndex = idx;
                 }
@@ -477,12 +516,12 @@ public class VirtualKeyScreen extends Screen {
     }
 
     public void handleMouseRelease(double mx, double my, int button) {
-        if (button == 0) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) {
             draggingSettings = false;
             if (clickedKeyIndex >= 0) {
                 int idx = clickedKeyIndex;
                 clickedKeyIndex = -1;
-                if (getButtonAt((int)mx, (int)my) == idx) {
+                if (getButtonAt((int) mx, (int) my) == idx) {
                     selectAndClose(idx);
                 }
             }
@@ -611,7 +650,9 @@ public class VirtualKeyScreen extends Screen {
                     VirtualKeysConfig.INSTANCE.keys.add(newLabel);
                     VirtualKeyDefinition.updateFromConfig(VirtualKeysConfig.INSTANCE.keys);
                     selectedKeyIndex = VirtualKeyDefinition.ALL.size() - 1;
+                    VirtualKeysConfig.save();
                     recalcLayout();
+                    focusNameEditBox(newLabel);
                     return true;
                 }
             }
@@ -627,6 +668,7 @@ public class VirtualKeyScreen extends Screen {
                         VirtualKeysConfig.INSTANCE.keys.set(selectedKeyIndex - 1, temp);
                         VirtualKeyDefinition.updateFromConfig(VirtualKeysConfig.INSTANCE.keys);
                         selectedKeyIndex--;
+                        VirtualKeysConfig.save();
                         recalcLayout();
                     }
                     return true;
@@ -639,6 +681,7 @@ public class VirtualKeyScreen extends Screen {
                         VirtualKeysConfig.INSTANCE.keys.set(selectedKeyIndex + 1, temp);
                         VirtualKeyDefinition.updateFromConfig(VirtualKeysConfig.INSTANCE.keys);
                         selectedKeyIndex++;
+                        VirtualKeysConfig.save();
                         recalcLayout();
                     }
                     return true;
@@ -648,6 +691,7 @@ public class VirtualKeyScreen extends Screen {
                     VirtualKeysConfig.INSTANCE.keys.remove(selectedKeyIndex);
                     VirtualKeyDefinition.updateFromConfig(VirtualKeysConfig.INSTANCE.keys);
                     selectedKeyIndex = -1;
+                    VirtualKeysConfig.save();
                     recalcLayout();
                     return true;
                 }
@@ -658,7 +702,8 @@ public class VirtualKeyScreen extends Screen {
     }
 
     public boolean isEditingText() {
-        return settingsModeActive && activeTab == 1 && selectedKeyIndex >= 0;
+        return settingsModeActive && activeTab == 1 && selectedKeyIndex >= 0
+                && nameEditBox != null && nameEditBox.isVisible() && nameEditBox.isFocused();
     }
 
     public Screen getParentScreen() {
@@ -677,8 +722,12 @@ public class VirtualKeyScreen extends Screen {
     private void updateSelectedKeyLabel(String label) {
         if (selectedKeyIndex >= 0 && selectedKeyIndex < VirtualKeyDefinition.ALL.size()) {
             VirtualKeyDefinition old = VirtualKeyDefinition.ALL.get(selectedKeyIndex);
-            VirtualKeyDefinition.ALL.set(selectedKeyIndex, new VirtualKeyDefinition(label, old.glfwKey));
-            VirtualKeysConfig.INSTANCE.keys.set(selectedKeyIndex, label);
+            if (!old.label.equals(label)) {
+                VirtualKeyDefinition.ALL.set(selectedKeyIndex, new VirtualKeyDefinition(label, old.glfwKey));
+                VirtualKeysConfig.INSTANCE.keys.set(selectedKeyIndex, label);
+                VirtualKeyDefinition.updateFromConfig(VirtualKeysConfig.INSTANCE.keys);
+                VirtualKeysConfig.save();
+            }
         }
     }
 
@@ -691,122 +740,84 @@ public class VirtualKeyScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (isEditingText()) {
-            if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
+            if (event.key() == InputConstants.KEY_RETURN || event.key() == InputConstants.KEY_NUMPADENTER) {
                 selectedKeyIndex = -1;
+                if (this.nameEditBox != null) {
+                    this.nameEditBox.setFocused(false);
+                    this.setFocused(null);
+                }
                 return true;
             }
-            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == InputConstants.KEY_ESCAPE) {
                 selectedKeyIndex = -1;
+                if (this.nameEditBox != null) {
+                    this.nameEditBox.setFocused(false);
+                    this.setFocused(null);
+                }
                 return true;
             }
             super.keyPressed(event);
             return true;
         }
-        if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+        if (event.key() == InputConstants.KEY_ESCAPE) {
+            if (settingsModeActive) {
+                settingsModeActive = false;
+                selectedKeyIndex = -1;
+                VirtualKeysConfig.save();
+                recalcLayout();
+                return true;
+            }
             closePanel();
             return true;
         }
         return super.keyPressed(event);
     }
 
+    @Override
+    public void onClose() {
+        closePanel();
+    }
+
     // ── 仮想キー発火ロジック ─────────────────────────────────────
 
     private void selectAndClose(int idx) {
+        if (idx < 0 || idx >= VirtualKeyDefinition.ALL.size()) return;
         VirtualKeyDefinition keyDef = VirtualKeyDefinition.ALL.get(idx);
-        
+
         // 1. パネルを閉じる
         closePanel();
-        
+
         // 2. 仮想キー入力をシミュレート
         simulateKeyPress(keyDef.glfwKey);
     }
 
     public void closePanel() {
-        if (dev.virtualkeys.client.VirtualKeysClient.overlayActive && dev.virtualkeys.client.VirtualKeysClient.overlayScreen == this) {
-            dev.virtualkeys.client.VirtualKeysClient.closeOverlay();
+        if (VirtualKeysClient.overlayActive && VirtualKeysClient.overlayScreen == this) {
+            VirtualKeysClient.closeOverlay();
         } else {
-            Minecraft.getInstance().setScreen(parentScreen);
+            Minecraft.getInstance().gui.setScreen(parentScreen);
         }
     }
 
     /**
      * 仮想キーイベントを発火する。
      */
-    private static void simulateKeyPress(int glfwKey) {
+    private static void simulateKeyPress(int virtualKeyCode) {
         Minecraft mc = Minecraft.getInstance();
 
         try {
             long windowHandle = mc.getWindow().handle();
-            if (!checkedOnKeyMethod) {
-                cachedOnKeyMethod = findOnKeyMethod(mc.keyboardHandler);
-                checkedOnKeyMethod = true;
-            }
-            java.lang.reflect.Method m = cachedOnKeyMethod;
-            if (m != null) {
-                m.setAccessible(true);
-                int scancode = org.lwjgl.glfw.GLFW.glfwGetKeyScancode(glfwKey);
-                dev.virtualkeys.client.VirtualKeysClient.setVirtualKeyDown(glfwKey, true);
-                
-                Class<?>[] params = m.getParameterTypes();
-                if (params.length == 5) {
-                    m.invoke(mc.keyboardHandler, windowHandle, glfwKey, scancode, GLFW.GLFW_PRESS, 0);
-                    m.invoke(mc.keyboardHandler, windowHandle, glfwKey, scancode, GLFW.GLFW_RELEASE, 0);
-                } else if (params.length == 3) {
-                    if (!checkedKeyEventConstructor) {
-                        Class<?> keyEventClass = params[2];
-                        try {
-                            cachedKeyEventConstructor = keyEventClass.getDeclaredConstructor(int.class, int.class, int.class);
-                            cachedKeyEventConstructor.setAccessible(true);
-                        } catch (Exception e) {
-                            System.err.println("[VirtualKeys Error] Failed to get KeyEvent constructor: " + e.getMessage());
-                        }
-                        checkedKeyEventConstructor = true;
-                    }
-                    if (cachedKeyEventConstructor != null) {
-                        Object pressEvent = cachedKeyEventConstructor.newInstance(glfwKey, scancode, 0);
-                        m.invoke(mc.keyboardHandler, windowHandle, GLFW.GLFW_PRESS, pressEvent);
-                        
-                        Object releaseEvent = cachedKeyEventConstructor.newInstance(glfwKey, scancode, 0);
-                        m.invoke(mc.keyboardHandler, windowHandle, GLFW.GLFW_RELEASE, releaseEvent);
-                    }
-                }
-                
-                dev.virtualkeys.client.VirtualKeysClient.setVirtualKeyDown(glfwKey, false);
-            } else {
-                System.err.println("[VirtualKeys Error] Could not find onKey/keyPress method on KeyboardHandler!");
+            VirtualKeysClient.setVirtualKeyDown(virtualKeyCode, true);
+            try {
+                mc.keyboardHandler.keyPress(windowHandle, InputConstants.PRESS, new KeyEvent(virtualKeyCode, 0, 0));
+                mc.keyboardHandler.keyPress(windowHandle, InputConstants.RELEASE, new KeyEvent(virtualKeyCode, 0, 0));
+            } finally {
+                VirtualKeysClient.setVirtualKeyDown(virtualKeyCode, false);
             }
         } catch (Exception e) {
             System.err.println("[VirtualKeys Error] Failed to simulate keypress: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    private static java.lang.reflect.Method findOnKeyMethod(Object handler) {
-        for (java.lang.reflect.Method m : handler.getClass().getDeclaredMethods()) {
-            if (m.isSynthetic() || m.isBridge()) {
-                continue;
-            }
-            Class<?>[] p = m.getParameterTypes();
-            if (p.length == 5
-                    && p[0] == long.class
-                    && p[1] == int.class
-                    && p[2] == int.class
-                    && p[3] == int.class
-                    && p[4] == int.class) {
-                return m;
-            }
-            if (p.length == 3
-                    && p[0] == long.class
-                    && p[1] == int.class
-                    && !p[2].isPrimitive()) {
-                try {
-                    p[2].getDeclaredConstructor(int.class, int.class, int.class);
-                    return m;
-                } catch (NoSuchMethodException ignored) {
-                }
-            }
-        }
-        return null;
     }
 
     // ── ユーティリティ ───────────────────────────────────────────

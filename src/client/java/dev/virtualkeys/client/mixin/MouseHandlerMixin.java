@@ -1,5 +1,6 @@
 package dev.virtualkeys.client.mixin;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.virtualkeys.client.VirtualKeysClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
@@ -25,13 +26,13 @@ public abstract class MouseHandlerMixin {
             double mx = this.getScaledXPos(this.minecraft.getWindow());
             double my = this.getScaledYPos(this.minecraft.getWindow());
 
-            if (action == 1) { // GLFW_PRESS = 1
+            if (action == InputConstants.PRESS) {
                 if (VirtualKeysClient.overlayScreen.isMouseOverPanel(mx, my)) {
                     VirtualKeysClient.overlayScreen.handleMouseClick(mx, my, info.button(), action);
                     VirtualKeysClient.overlayCapturedPress = true;
                     ci.cancel();
                 }
-            } else if (action == 0) { // GLFW_RELEASE = 0
+            } else if (action == InputConstants.RELEASE) {
                 if (VirtualKeysClient.overlayCapturedPress) {
                     VirtualKeysClient.overlayScreen.handleMouseRelease(mx, my, info.button());
                     VirtualKeysClient.overlayCapturedPress = false;

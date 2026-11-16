@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 }
 
@@ -31,21 +31,20 @@ loom {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	// Conditional Mixin (required by tweakeroo / malilib)
-	modRuntimeOnly("me.fallenbreath:conditional-mixin-fabric:0.6.4") {
+	runtimeOnly("me.fallenbreath:conditional-mixin-fabric:0.6.4") {
 		exclude group: "net.fabricmc.fabric-api"
 		exclude group: "net.fabricmc"
 		exclude group: "org.spongepowered"
 	}
 
-	// Local mods (tweakeroo, malilib, etc.) to be remapped and loaded at runtime
-	modRuntimeOnly fileTree(dir: 'libs', include: ['*.jar'])
+	// Local mods (tweakeroo, malilib, etc.) to be loaded at runtime
+	runtimeOnly fileTree(dir: 'libs', include: ['*.jar'])
 }
 
 processResources {
@@ -58,7 +57,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 25
 }
 
 java {
@@ -67,8 +66,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {

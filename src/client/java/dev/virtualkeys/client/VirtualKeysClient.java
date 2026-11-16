@@ -4,10 +4,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class VirtualKeysClient implements ClientModInitializer {
@@ -22,16 +21,16 @@ public class VirtualKeysClient implements ClientModInitializer {
 
     private static final java.util.Set<Integer> pressedVirtualKeys = new java.util.HashSet<>();
 
-    public static void setVirtualKeyDown(int glfwKey, boolean down) {
+    public static void setVirtualKeyDown(int virtualKeyCode, boolean down) {
         if (down) {
-            pressedVirtualKeys.add(glfwKey);
+            pressedVirtualKeys.add(virtualKeyCode);
         } else {
-            pressedVirtualKeys.remove(glfwKey);
+            pressedVirtualKeys.remove(virtualKeyCode);
         }
     }
 
-    public static boolean isVirtualKeyDown(int glfwKey) {
-        return pressedVirtualKeys.contains(glfwKey);
+    public static boolean isVirtualKeyDown(int virtualKeyCode) {
+        return pressedVirtualKeys.contains(virtualKeyCode);
     }
 
     /**
@@ -40,32 +39,32 @@ public class VirtualKeysClient implements ClientModInitializer {
      */
     public static boolean isTypingInTextField() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.screen == null) return false;
+        if (mc.gui.screen() == null) return false;
 
         // Chat screen
-        if (mc.screen instanceof net.minecraft.client.gui.screens.ChatScreen) return true;
+        if (mc.gui.screen() instanceof net.minecraft.client.gui.screens.ChatScreen) return true;
 
         // 看板・本・アンビル・コマンドブロックなどの文字入力 GUI（クラス名で判定）
-        String cls = mc.screen.getClass().getName().toLowerCase();
+        String cls = mc.gui.screen().getClass().getName().toLowerCase();
         if (cls.contains("sign") && cls.contains("edit")) return true;
         if (cls.contains("book") && cls.contains("edit")) return true;
         if (cls.contains("anvil")) return true;
         if (cls.contains("commandblock")) return true;
 
         // フォーカスされたウィジェットがテキスト入力系であるか判定（他Mod対応含む）
-        net.minecraft.client.gui.components.events.GuiEventListener focused = mc.screen.getFocused();
+        net.minecraft.client.gui.components.events.GuiEventListener focused = mc.gui.screen().getFocused();
         if (focused != null) {
             if (focused instanceof net.minecraft.client.gui.components.EditBox) {
                 return ((net.minecraft.client.gui.components.EditBox) focused).isVisible();
             }
-            
+
             String fullName = focused.getClass().getName().toLowerCase();
             String simpleName = focused.getClass().getSimpleName().toLowerCase();
-            
-            if (simpleName.contains("editbox") || 
-                simpleName.contains("textfield") || 
-                simpleName.contains("textbox") || 
-                simpleName.contains("inputfield") || 
+
+            if (simpleName.contains("editbox") ||
+                simpleName.contains("textfield") ||
+                simpleName.contains("textbox") ||
+                simpleName.contains("inputfield") ||
                 simpleName.contains("search") ||
                 fullName.contains("widgettextfield")) {
                 return true;
@@ -89,18 +88,18 @@ public class VirtualKeysClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         // ホットキー登録 (デフォルト: F8)
-        openGuiKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        openGuiKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
             "key.virtualkeys.open_gui",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_F8,
+            InputConstants.Type.KEYBOARD,
+            InputConstants.KEY_F8,
             CATEGORY
         ));
 
         // 常に開くホットキー (デフォルト: 未割当)
-        alwaysOpenGuiKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        alwaysOpenGuiKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
             "key.virtualkeys.always_open_gui",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_UNKNOWN,
+            InputConstants.Type.KEYBOARD,
+            InputConstants.UNKNOWN.getValue(),
             CATEGORY
         ));
     }

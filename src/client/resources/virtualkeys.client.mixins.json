@@ -1,7 +1,8 @@
 {
 	"required": true,
 	"package": "dev.virtualkeys.client.mixin",
-	"compatibilityLevel": "JAVA_21",
+	"compatibilityLevel": "JAVA_25",
+	"plugin": "dev.virtualkeys.client.mixin.VirtualKeysMixinPlugin",
 	"client": [
 		"KeyboardHandlerMixin",
 		"KeyMappingMixin",
@@ -10,7 +11,8 @@
 		"MouseHandlerMixin",
 		"InputConstantsMixin",
 		"KeyCodesMixin",
-		"MinecraftMixin"
+		"GuiMixin",
+		"ToggleKeyMappingMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0
