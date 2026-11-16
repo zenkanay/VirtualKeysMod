@@ -21,10 +21,37 @@ public class VirtualKeysMixinPlugin implements IMixinConfigPlugin {
         return null;
     }
 
+    private static final java.util.Map<String, String[]> MIXIN_REQUIRED_CLASSES = java.util.Map.of(
+            ".KeyCodesMixin", new String[]{"fi/dy/masa/malilib/util/KeyCodes.class"},
+            ".ScanCodesMixin", new String[]{"fi/dy/masa/malilib/util/input/ScanCodes.class"},
+            ".MalilibInputKeyCodesMixin", new String[]{"fi/dy/masa/malilib/util/input/KeyCodes.class"},
+            ".MalilibInputUtilsMixin", new String[]{"fi/dy/masa/malilib/util/input/InputUtils.class"},
+            ".MalilibInputEventHandlerMixin", new String[]{
+                    "fi/dy/masa/malilib/event/InputEventHandler.class",
+                    "fi/dy/masa/malilib/util/input/ScanCodes.class"
+            }
+    );
+
+    private static boolean hasClassResource(String resourcePath) {
+        ClassLoader cl = VirtualKeysMixinPlugin.class.getClassLoader();
+        if (cl != null && cl.getResource(resourcePath) != null) {
+            return true;
+        }
+        ClassLoader ctx = Thread.currentThread().getContextClassLoader();
+        return ctx != null && ctx.getResource(resourcePath) != null;
+    }
+
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (mixinClassName.endsWith(".KeyCodesMixin")) {
-            return VirtualKeysMixinPlugin.class.getClassLoader().getResource("fi/dy/masa/malilib/util/KeyCodes.class") != null;
+        for (java.util.Map.Entry<String, String[]> entry : MIXIN_REQUIRED_CLASSES.entrySet()) {
+            if (mixinClassName.endsWith(entry.getKey())) {
+                for (String requiredClass : entry.getValue()) {
+                    if (!hasClassResource(requiredClass)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
         }
         return true;
     }

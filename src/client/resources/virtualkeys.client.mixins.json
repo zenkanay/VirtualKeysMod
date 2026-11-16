@@ -11,6 +11,10 @@
 		"MouseHandlerMixin",
 		"InputConstantsMixin",
 		"KeyCodesMixin",
+		"ScanCodesMixin",
+		"MalilibInputKeyCodesMixin",
+		"MalilibInputUtilsMixin",
+		"MalilibInputEventHandlerMixin",
 		"GuiMixin",
 		"ToggleKeyMappingMixin"
 	],

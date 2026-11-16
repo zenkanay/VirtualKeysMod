@@ -1248,6 +1248,7 @@ public class VirtualKeyScreen extends Screen {
 
         try {
             long windowHandle = mc.getWindow().handle();
+            MalilibCompat.clearMouseButtonsFromPressedKeys();
             VirtualKeysClient.setVirtualKeyDown(virtualKeyCode, true);
             try {
                 mc.keyboardHandler.keyPress(windowHandle, InputConstants.PRESS, new KeyEvent(virtualKeyCode, 0, 0));
