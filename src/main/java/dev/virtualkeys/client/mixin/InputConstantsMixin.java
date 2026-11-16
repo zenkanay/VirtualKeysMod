@@ -1,6 +1,7 @@
 package dev.virtualkeys.client.mixin;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.virtualkeys.VirtualKeyDefinition;
 import dev.virtualkeys.client.VirtualKeysClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,9 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class InputConstantsMixin {
 
     @Inject(method = "isKeyDown", at = @At("HEAD"), cancellable = true)
-    private static void onIsKeyDown(com.mojang.blaze3d.platform.Window window, int key, CallbackInfoReturnable<Boolean> cir) {
+    private static void onIsKeyDown(long window, int key, CallbackInfoReturnable<Boolean> cir) {
         if (VirtualKeysClient.isVirtualKeyDown(key)) {
             cir.setReturnValue(true);
+        } else if (VirtualKeyDefinition.getByCode(key) != null) {
+            cir.setReturnValue(false);
         }
     }
 }

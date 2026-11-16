@@ -106,8 +106,8 @@ public class VirtualKeyScreen extends Screen {
         });
         this.addRenderableWidget(this.nameEditBox);
 
-        ensureActiveTabVisible();
         recalcLayout();
+        ensureActiveTabVisible();
     }
 
     private TabConfig activeTab() {
@@ -601,7 +601,8 @@ public class VirtualKeyScreen extends Screen {
                     drawButton(g, sx + PANEL_PADDING + 90, y3, 45, 14, "Delete", false, mouseX, mouseY);
                 }
 
-                g.drawString(this.font, "Tab: " + (tab.name != null ? tab.name : ""), sx + PANEL_PADDING, y4 + 4, 0xFF888888, false);
+                String tabInfo = this.font.plainSubstrByWidth("Tab: " + (tab.name != null ? tab.name : ""), sw - PANEL_PADDING * 2);
+                g.drawString(this.font, tabInfo, sx + PANEL_PADDING, y4 + 4, 0xFF888888, false);
             } else {
                 // Tab 2: Tabs Editor
                 drawButton(g, sx + PANEL_PADDING, y1, 60, 14, "+ Add Tab", false, mouseX, mouseY);
