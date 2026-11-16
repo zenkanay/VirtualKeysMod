@@ -345,6 +345,14 @@ public class VirtualKeyScreen extends Screen {
             // 設定タイトル
             g.drawString(this.font, "Settings", sx + PANEL_PADDING, sy + PANEL_PADDING + 2, 0xFFE0E0E0, false);
 
+            // 設定ウィンドウの閉じる(×)ボタン
+            int closeW = 16;
+            int closeH = 12;
+            int closeX = sx + sw - PANEL_PADDING - closeW;
+            int closeY = sy + PANEL_PADDING;
+            boolean closeHovered = mouseX >= closeX && mouseX < closeX + closeW && mouseY >= closeY && mouseY < closeY + closeH;
+            g.drawString(this.font, "×", closeX + (closeW - this.font.width("×")) / 2, closeY + (closeH - 8) / 2, closeHovered ? 0xFFFFFFFF : 0xFF888888, false);
+
             // タブ切り替えボタン
             int tabY = sy + PANEL_PADDING + 12;
             drawButton(g, sx + PANEL_PADDING, tabY, 50, 14, "Layout", activeTab == 0, mouseX, mouseY);
@@ -459,11 +467,23 @@ public class VirtualKeyScreen extends Screen {
                 return true;
             }
 
-            // 2. 設定パネルのドラッグ判定 (タイトルバー部分)
+            // 2. 設定ウィンドウの閉じる(×)ボタン & ドラッグ判定 (タイトルバー部分)
             if (settingsModeActive) {
                 int sx = getSettingsX();
                 int sy = getSettingsY();
                 int sw = getSettingsW();
+                int closeW = 16;
+                int closeH = 12;
+                int closeX = sx + sw - PANEL_PADDING - closeW;
+                int closeY = sy + PANEL_PADDING;
+                if (mx >= closeX && mx < closeX + closeW && my >= closeY && my < closeY + closeH) {
+                    settingsModeActive = false;
+                    selectedKeyIndex = -1;
+                    draggingSettings = false;
+                    VirtualKeysConfig.save();
+                    recalcLayout();
+                    return true;
+                }
                 if (mx >= sx && mx < sx + sw && my >= sy && my < sy + 16) {
                     draggingSettings = true;
                     dragOffsetX = mx - sx;
