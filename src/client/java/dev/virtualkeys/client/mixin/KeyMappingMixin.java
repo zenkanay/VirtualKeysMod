@@ -1,6 +1,7 @@
 package dev.virtualkeys.client.mixin;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.virtualkeys.VirtualKeyDefinition;
 import dev.virtualkeys.client.VirtualKeysClient;
 import dev.virtualkeys.client.VirtualKeyScreen;
 import net.minecraft.client.KeyMapping;
@@ -55,7 +56,7 @@ public class KeyMappingMixin {
                 int code = this.key.getValue();
                 if (code != InputConstants.UNKNOWN.getValue()) {
                     if (this.key.getType() == InputConstants.Type.KEYSYM) {
-                        if (InputConstants.isKeyDown(mc.getWindow(), code)) {
+                        if (VirtualKeyDefinition.getByCode(code) == null && InputConstants.isKeyDown(mc.getWindow(), code)) {
                             cir.setReturnValue(true);
                             return;
                         }
@@ -66,7 +67,7 @@ public class KeyMappingMixin {
                             return;
                         }
                     } else if (this.key.getType() == InputConstants.Type.SCANCODE) {
-                        if (InputConstants.isKeyDown(mc.getWindow(), code)) {
+                        if (VirtualKeyDefinition.getByCode(code) == null && InputConstants.isKeyDown(mc.getWindow(), code)) {
                             cir.setReturnValue(true);
                             return;
                         }
