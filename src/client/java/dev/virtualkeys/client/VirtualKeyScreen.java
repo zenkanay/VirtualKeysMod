@@ -604,7 +604,6 @@ public class VirtualKeyScreen extends Screen {
             } else if (settingsTab == 1) {
                 // Tab 1: Keys Editor
                 drawButton(g, sx + PANEL_PADDING, y1, 60, 14, "+ Add Key", false, mouseX, mouseY);
-                drawAccentButton(g, sx + PANEL_PADDING + 65, y1, 68, 14, "+ Add Stay", false, mouseX, mouseY, true, 0xFF059669, 0xFF10B981, 0xCC34D399);
 
                 if (selectedKeyIndex < 0 || selectedKeyIndex >= numKeys) {
                     g.text(this.font, "Click a key to edit.", sx + PANEL_PADDING, y2 + 4, 0xFF888888, false);
@@ -613,7 +612,7 @@ public class VirtualKeyScreen extends Screen {
                     drawButton(g, sx + PANEL_PADDING + 38, y3, 38, 14, "Down", false, mouseX, mouseY);
                     drawButton(g, sx + PANEL_PADDING + 80, y3, 42, 14, "Delete", false, mouseX, mouseY);
                     boolean keepOpen = tab.isKeyKeepOpen(selectedKeyIndex);
-                    drawAccentButton(g, sx + PANEL_PADDING + 126, y3, 84, 14, "Keep Open", keepOpen, mouseX, mouseY, true, 0xFF059669, 0xFF10B981, 0xCC34D399);
+                    drawAccentButton(g, sx + PANEL_PADDING + 126, y3, 84, 14, "Keep Open", keepOpen, mouseX, mouseY, true, 0xFF059669, 0xFF10B981);
                 }
 
                 String tabInfo = this.font.plainSubstrByWidth("Tab: " + (tab.name != null ? tab.name : ""), sw - PANEL_PADDING * 2);
@@ -678,11 +677,11 @@ public class VirtualKeyScreen extends Screen {
     }
 
     private void drawButton(GuiGraphicsExtractor g, int x, int y, int w, int h, String text, boolean active, int mx, int my, boolean enabled) {
-        drawAccentButton(g, x, y, w, h, text, active, mx, my, enabled, 0xFF2563EB, 0xFF3B82F6, 0);
+        drawAccentButton(g, x, y, w, h, text, active, mx, my, enabled, 0xFF2563EB, 0xFF3B82F6);
     }
 
     private void drawAccentButton(GuiGraphicsExtractor g, int x, int y, int w, int h, String text, boolean active,
-                                  int mx, int my, boolean enabled, int activeBg, int activeHoverBg, int inactiveBorder) {
+                                  int mx, int my, boolean enabled, int activeBg, int activeHoverBg) {
         boolean hovered = enabled && mx >= x && mx < x + w && my >= y && my < y + h;
         int bgColor;
         if (!enabled) {
@@ -694,9 +693,6 @@ public class VirtualKeyScreen extends Screen {
         }
         int textColor = !enabled ? 0xFF666666 : (active ? 0xFFFFFFFF : (hovered ? 0xFFFFFFFF : 0xFFCCCCCC));
         g.fill(x, y, x + w, y + h, bgColor);
-        if (!active && enabled && inactiveBorder != 0) {
-            drawBorder(g, x, y, w, h, inactiveBorder);
-        }
         g.centeredText(this.font, text, x + w / 2, y + (h - 8) / 2, textColor);
     }
 
@@ -1018,14 +1014,12 @@ public class VirtualKeyScreen extends Screen {
             }
         } else if (settingsTab == 1) {
             // Tab 1: Keys Editor
-            // Row 1: + Add Key / + Add Stay
+            // Row 1: + Add Key
             if (my >= y1 && my < y1 + 14) {
-                boolean addNormal = mx >= sx + PANEL_PADDING && mx < sx + PANEL_PADDING + 60;
-                boolean addStay = mx >= sx + PANEL_PADDING + 65 && mx < sx + PANEL_PADDING + 65 + 68;
-                if (addNormal || addStay) {
+                if (mx >= sx + PANEL_PADDING && mx < sx + PANEL_PADDING + 60) {
                     String newLabel = VirtualKeysConfig.INSTANCE.allocateNextDefaultKeyLabel();
                     int newCode = VirtualKeysConfig.INSTANCE.allocateNextKeyCode();
-                    tab.addKey(newLabel, newCode, addStay);
+                    tab.addKey(newLabel, newCode, false);
                     VirtualKeyDefinition.updateFromTabs(VirtualKeysConfig.INSTANCE.tabs);
                     selectedKeyIndex = tab.keys.size() - 1;
                     VirtualKeysConfig.save();
