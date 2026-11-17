@@ -528,17 +528,10 @@ public class VirtualKeyScreen extends Screen {
                                && mouseY >= by && mouseY < by + buttonH;
                 if (hovered) hoveredIndex = i;
 
-                int bgColor;
-                if (settingsModeActive && settingsTab == 1 && selectedKeyIndex == i) {
-                    bgColor = 0xFF2563EB; // 青ハイライト（編集中のキー）
-                } else {
-                    bgColor = hovered ? 0x44FFFFFF : 0x22FFFFFF;
-                }
-                int textColor = (settingsModeActive && settingsTab == 1 && selectedKeyIndex == i) ? 0xFFFFFFFF : (hovered ? 0xFFFFFFFF : 0xFFCCCCCC);
-
-                g.fill(bx, by, bx + buttonW, by + buttonH, bgColor);
-                g.centeredText(this.font, tab.keys.get(i),
-                    bx + buttonW / 2, by + (buttonH - 8) / 2, textColor);
+                boolean selected = settingsModeActive && settingsTab == 1 && selectedKeyIndex == i;
+                boolean pressed = clickedKeyIndex == i && hovered;
+                boolean keepOpen = tab.isKeyKeepOpen(i);
+                drawKeyButton(g, bx, by, buttonW, buttonH, tab.keys.get(i), keepOpen, selected, hovered, pressed);
             }
         }
 
@@ -611,13 +604,16 @@ public class VirtualKeyScreen extends Screen {
             } else if (settingsTab == 1) {
                 // Tab 1: Keys Editor
                 drawButton(g, sx + PANEL_PADDING, y1, 60, 14, "+ Add Key", false, mouseX, mouseY);
+                drawAccentButton(g, sx + PANEL_PADDING + 65, y1, 68, 14, "+ Add Stay", false, mouseX, mouseY, true, 0xFF059669, 0xFF10B981, 0xCC34D399);
 
                 if (selectedKeyIndex < 0 || selectedKeyIndex >= numKeys) {
                     g.text(this.font, "Click a key to edit.", sx + PANEL_PADDING, y2 + 4, 0xFF888888, false);
                 } else {
-                    drawButton(g, sx + PANEL_PADDING, y3, 40, 14, "Up", false, mouseX, mouseY);
-                    drawButton(g, sx + PANEL_PADDING + 45, y3, 40, 14, "Down", false, mouseX, mouseY);
-                    drawButton(g, sx + PANEL_PADDING + 90, y3, 45, 14, "Delete", false, mouseX, mouseY);
+                    drawButton(g, sx + PANEL_PADDING, y3, 34, 14, "Up", false, mouseX, mouseY);
+                    drawButton(g, sx + PANEL_PADDING + 38, y3, 38, 14, "Down", false, mouseX, mouseY);
+                    drawButton(g, sx + PANEL_PADDING + 80, y3, 42, 14, "Delete", false, mouseX, mouseY);
+                    boolean keepOpen = tab.isKeyKeepOpen(selectedKeyIndex);
+                    drawAccentButton(g, sx + PANEL_PADDING + 126, y3, 84, 14, "Keep Open", keepOpen, mouseX, mouseY, true, 0xFF059669, 0xFF10B981, 0xCC34D399);
                 }
 
                 String tabInfo = this.font.plainSubstrByWidth("Tab: " + (tab.name != null ? tab.name : ""), sw - PANEL_PADDING * 2);
@@ -641,22 +637,66 @@ public class VirtualKeyScreen extends Screen {
         super.extractRenderState(g, mouseX, mouseY, delta);
     }
 
+    private void drawKeyButton(GuiGraphicsExtractor g, int bx, int by, int bw, int bh, String label,
+                               boolean keepOpen, boolean selected, boolean hovered, boolean pressed) {
+        int bgColor;
+        if (selected) {
+            bgColor = 0xFF2563EB; // 青ハイライト（編集中のキー）
+        } else if (keepOpen) {
+            bgColor = pressed ? 0x7710B981 : (hovered ? 0x6610B981 : 0x4410B981);
+        } else {
+            bgColor = pressed ? 0x55FFFFFF : (hovered ? 0x44FFFFFF : 0x22FFFFFF);
+        }
+
+        int textColor = selected ? 0xFFFFFFFF
+                : (keepOpen ? (hovered ? 0xFFFFFFFF : 0xFFD1FAE5) : (hovered ? 0xFFFFFFFF : 0xFFCCCCCC));
+
+        g.fill(bx, by, bx + bw, by + bh, bgColor);
+
+        if (keepOpen) {
+            int borderColor = (hovered || selected) ? 0xFF6EE7B7 : 0xCC34D399;
+            drawBorder(g, bx, by, bw, bh, borderColor);
+
+            // 右上にピン留め（閉じない）を示すドットマーカーを表示
+            if (bw >= 10 && bh >= 8) {
+                g.fill(bx + bw - 4, by + 2, bx + bw - 2, by + 4, 0xFF6EE7B7);
+            }
+        }
+
+        g.centeredText(this.font, label, bx + bw / 2, by + (bh - 8) / 2, textColor);
+    }
+
+    private static void drawBorder(GuiGraphicsExtractor g, int x, int y, int w, int h, int color) {
+        g.fill(x, y, x + w, y + 1, color);
+        g.fill(x, y + h - 1, x + w, y + h, color);
+        g.fill(x, y + 1, x + 1, y + h - 1, color);
+        g.fill(x + w - 1, y + 1, x + w, y + h - 1, color);
+    }
+
     private void drawButton(GuiGraphicsExtractor g, int x, int y, int w, int h, String text, boolean active, int mx, int my) {
         drawButton(g, x, y, w, h, text, active, mx, my, true);
     }
 
     private void drawButton(GuiGraphicsExtractor g, int x, int y, int w, int h, String text, boolean active, int mx, int my, boolean enabled) {
+        drawAccentButton(g, x, y, w, h, text, active, mx, my, enabled, 0xFF2563EB, 0xFF3B82F6, 0);
+    }
+
+    private void drawAccentButton(GuiGraphicsExtractor g, int x, int y, int w, int h, String text, boolean active,
+                                  int mx, int my, boolean enabled, int activeBg, int activeHoverBg, int inactiveBorder) {
         boolean hovered = enabled && mx >= x && mx < x + w && my >= y && my < y + h;
         int bgColor;
         if (!enabled) {
             bgColor = 0x12FFFFFF;
         } else if (active) {
-            bgColor = hovered ? 0xFF3B82F6 : 0xFF2563EB; // 青ハイライト
+            bgColor = hovered ? activeHoverBg : activeBg;
         } else {
             bgColor = hovered ? 0x44FFFFFF : 0x22FFFFFF;
         }
         int textColor = !enabled ? 0xFF666666 : (active ? 0xFFFFFFFF : (hovered ? 0xFFFFFFFF : 0xFFCCCCCC));
         g.fill(x, y, x + w, y + h, bgColor);
+        if (!active && enabled && inactiveBorder != 0) {
+            drawBorder(g, x, y, w, h, inactiveBorder);
+        }
         g.centeredText(this.font, text, x + w / 2, y + (h - 8) / 2, textColor);
     }
 
@@ -978,13 +1018,14 @@ public class VirtualKeyScreen extends Screen {
             }
         } else if (settingsTab == 1) {
             // Tab 1: Keys Editor
-            // Row 1: Add Key
+            // Row 1: + Add Key / + Add Stay
             if (my >= y1 && my < y1 + 14) {
-                if (mx >= sx + PANEL_PADDING && mx < sx + PANEL_PADDING + 60) {
+                boolean addNormal = mx >= sx + PANEL_PADDING && mx < sx + PANEL_PADDING + 60;
+                boolean addStay = mx >= sx + PANEL_PADDING + 65 && mx < sx + PANEL_PADDING + 65 + 68;
+                if (addNormal || addStay) {
                     String newLabel = VirtualKeysConfig.INSTANCE.allocateNextDefaultKeyLabel();
                     int newCode = VirtualKeysConfig.INSTANCE.allocateNextKeyCode();
-                    tab.keys.add(newLabel);
-                    tab.keyCodes.add(newCode);
+                    tab.addKey(newLabel, newCode, addStay);
                     VirtualKeyDefinition.updateFromTabs(VirtualKeysConfig.INSTANCE.tabs);
                     selectedKeyIndex = tab.keys.size() - 1;
                     VirtualKeysConfig.save();
@@ -998,9 +1039,9 @@ public class VirtualKeyScreen extends Screen {
 
             if (selectedKeyIndex >= 0 && selectedKeyIndex < numKeys && my >= y3 && my < y3 + 14) {
                 // Move Up
-                if (mx >= sx + PANEL_PADDING && mx < sx + PANEL_PADDING + 40) {
+                if (mx >= sx + PANEL_PADDING && mx < sx + PANEL_PADDING + 34) {
                     if (selectedKeyIndex > 0) {
-                        swapKeys(tab, selectedKeyIndex, selectedKeyIndex - 1);
+                        tab.swapKeys(selectedKeyIndex, selectedKeyIndex - 1);
                         selectedKeyIndex--;
                         VirtualKeyDefinition.updateFromTabs(VirtualKeysConfig.INSTANCE.tabs);
                         VirtualKeysConfig.save();
@@ -1009,9 +1050,9 @@ public class VirtualKeyScreen extends Screen {
                     return true;
                 }
                 // Move Down
-                if (mx >= sx + PANEL_PADDING + 45 && mx < sx + PANEL_PADDING + 45 + 40) {
+                if (mx >= sx + PANEL_PADDING + 38 && mx < sx + PANEL_PADDING + 38 + 38) {
                     if (selectedKeyIndex < numKeys - 1) {
-                        swapKeys(tab, selectedKeyIndex, selectedKeyIndex + 1);
+                        tab.swapKeys(selectedKeyIndex, selectedKeyIndex + 1);
                         selectedKeyIndex++;
                         VirtualKeyDefinition.updateFromTabs(VirtualKeysConfig.INSTANCE.tabs);
                         VirtualKeysConfig.save();
@@ -1020,15 +1061,18 @@ public class VirtualKeyScreen extends Screen {
                     return true;
                 }
                 // Delete
-                if (mx >= sx + PANEL_PADDING + 90 && mx < sx + PANEL_PADDING + 90 + 45) {
-                    tab.keys.remove(selectedKeyIndex);
-                    if (selectedKeyIndex < tab.keyCodes.size()) {
-                        tab.keyCodes.remove(selectedKeyIndex);
-                    }
+                if (mx >= sx + PANEL_PADDING + 80 && mx < sx + PANEL_PADDING + 80 + 42) {
+                    tab.removeKey(selectedKeyIndex);
                     VirtualKeyDefinition.updateFromTabs(VirtualKeysConfig.INSTANCE.tabs);
                     selectedKeyIndex = -1;
                     VirtualKeysConfig.save();
                     recalcLayout();
+                    return true;
+                }
+                // Keep Open toggle
+                if (mx >= sx + PANEL_PADDING + 126 && mx < sx + PANEL_PADDING + 126 + 84) {
+                    tab.toggleKeyKeepOpen(selectedKeyIndex);
+                    VirtualKeysConfig.save();
                     return true;
                 }
             }
@@ -1049,8 +1093,11 @@ public class VirtualKeyScreen extends Screen {
                     newTab.horizontalAlign = tab.horizontalAlign;
                     newTab.verticalAlign = tab.verticalAlign;
                     newTab.keysPerRow = tab.keysPerRow;
-                    newTab.keys.add(VirtualKeysConfig.INSTANCE.allocateNextDefaultKeyLabel());
-                    newTab.keyCodes.add(VirtualKeysConfig.INSTANCE.allocateNextKeyCode());
+                    newTab.addKey(
+                            VirtualKeysConfig.INSTANCE.allocateNextDefaultKeyLabel(),
+                            VirtualKeysConfig.INSTANCE.allocateNextKeyCode(),
+                            false
+                    );
 
                     tabs.add(newTab);
                     VirtualKeysConfig.INSTANCE.activeTab = tabs.size() - 1;
@@ -1110,17 +1157,6 @@ public class VirtualKeyScreen extends Screen {
         }
 
         return false;
-    }
-
-    private static void swapKeys(TabConfig tab, int i, int j) {
-        String tmpLabel = tab.keys.get(i);
-        tab.keys.set(i, tab.keys.get(j));
-        tab.keys.set(j, tmpLabel);
-        if (i < tab.keyCodes.size() && j < tab.keyCodes.size()) {
-            Integer tmpCode = tab.keyCodes.get(i);
-            tab.keyCodes.set(i, tab.keyCodes.get(j));
-            tab.keyCodes.set(j, tmpCode);
-        }
     }
 
     private static String allocateNextTabName(List<TabConfig> tabs) {
@@ -1224,8 +1260,10 @@ public class VirtualKeyScreen extends Screen {
         if (idx < 0 || idx >= tab.keys.size() || idx >= tab.keyCodes.size()) return;
         int keyCode = tab.keyCodes.get(idx);
 
-        // 1. パネルを閉じる
-        closePanel();
+        if (!tab.isKeyKeepOpen(idx)) {
+            // 1. パネルを閉じる
+            closePanel();
+        }
 
         // 2. 仮想キー入力をシミュレート
         simulateKeyPress(keyCode);
@@ -1249,12 +1287,14 @@ public class VirtualKeyScreen extends Screen {
         try {
             long windowHandle = mc.getWindow().handle();
             MalilibCompat.clearMouseButtonsFromPressedKeys();
+            VirtualKeysClient.simulatingVirtualKey = true;
             VirtualKeysClient.setVirtualKeyDown(virtualKeyCode, true);
             try {
                 mc.keyboardHandler.keyPress(windowHandle, InputConstants.PRESS, new KeyEvent(virtualKeyCode, 0, 0));
                 mc.keyboardHandler.keyPress(windowHandle, InputConstants.RELEASE, new KeyEvent(virtualKeyCode, 0, 0));
             } finally {
                 VirtualKeysClient.setVirtualKeyDown(virtualKeyCode, false);
+                VirtualKeysClient.simulatingVirtualKey = false;
             }
         } catch (Exception e) {
             System.err.println("[VirtualKeys Error] Failed to simulate keypress: " + e.getMessage());

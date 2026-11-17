@@ -29,7 +29,8 @@ public class VirtualKeysMixinPlugin implements IMixinConfigPlugin {
             ".MalilibInputEventHandlerMixin", new String[]{
                     "fi/dy/masa/malilib/event/InputEventHandler.class",
                     "fi/dy/masa/malilib/util/input/ScanCodes.class"
-            }
+            },
+            ".MalilibGuiUtilsMixin", new String[]{"fi/dy/masa/malilib/util/GuiUtils.class"}
     );
 
     private static boolean hasClassResource(String resourcePath) {

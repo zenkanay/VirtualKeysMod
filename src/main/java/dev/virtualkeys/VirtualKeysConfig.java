@@ -36,6 +36,9 @@ public class VirtualKeysConfig {
         @SerializedName("key_codes")
         public List<Integer> keyCodes = new ArrayList<>();
 
+        @SerializedName("key_keep_open")
+        public List<Boolean> keyKeepOpen = new ArrayList<>();
+
         @SerializedName("button_width")
         public int buttonWidth = 48;
 
@@ -60,12 +63,85 @@ public class VirtualKeysConfig {
             }
             if (keys == null) keys = new ArrayList<>();
             if (keyCodes == null) keyCodes = new ArrayList<>();
+            if (keyKeepOpen == null) keyKeepOpen = new ArrayList<>();
+            while (keyKeepOpen.size() < keys.size()) {
+                keyKeepOpen.add(Boolean.FALSE);
+            }
+            while (keyKeepOpen.size() > keys.size()) {
+                keyKeepOpen.remove(keyKeepOpen.size() - 1);
+            }
+            for (int i = 0; i < keyKeepOpen.size(); i++) {
+                if (keyKeepOpen.get(i) == null) {
+                    keyKeepOpen.set(i, Boolean.FALSE);
+                }
+            }
             if (buttonWidth < 1) buttonWidth = 48;
             if (buttonHeight < 1) buttonHeight = 18;
             if (buttonGap < 0) buttonGap = 3;
             if (keysPerRow < 1) keysPerRow = 3;
             if (horizontalAlign == null) horizontalAlign = HorizontalAlign.CENTER;
             if (verticalAlign == null) verticalAlign = VerticalAlign.CENTER;
+        }
+
+        public boolean isKeyKeepOpen(int index) {
+            return index >= 0 && keyKeepOpen != null && index < keyKeepOpen.size()
+                    && Boolean.TRUE.equals(keyKeepOpen.get(index));
+        }
+
+        public void toggleKeyKeepOpen(int index) {
+            if (index < 0 || keys == null || index >= keys.size()) return;
+            sanitizeKeyKeepOpen();
+            keyKeepOpen.set(index, !isKeyKeepOpen(index));
+        }
+
+        public void addKey(String label, int code, boolean keepOpen) {
+            if (keys == null) keys = new ArrayList<>();
+            if (keyCodes == null) keyCodes = new ArrayList<>();
+            sanitizeKeyKeepOpen();
+            keys.add(label);
+            keyCodes.add(code);
+            keyKeepOpen.add(keepOpen);
+        }
+
+        public void removeKey(int index) {
+            if (keys != null && index >= 0 && index < keys.size()) {
+                keys.remove(index);
+            }
+            if (keyCodes != null && index >= 0 && index < keyCodes.size()) {
+                keyCodes.remove(index);
+            }
+            if (keyKeepOpen != null && index >= 0 && index < keyKeepOpen.size()) {
+                keyKeepOpen.remove(index);
+            }
+        }
+
+        public void swapKeys(int i, int j) {
+            if (keys == null || i < 0 || j < 0 || i >= keys.size() || j >= keys.size()) return;
+            String tmpLabel = keys.get(i);
+            keys.set(i, keys.get(j));
+            keys.set(j, tmpLabel);
+            if (keyCodes != null && i < keyCodes.size() && j < keyCodes.size()) {
+                Integer tmpCode = keyCodes.get(i);
+                keyCodes.set(i, keyCodes.get(j));
+                keyCodes.set(j, tmpCode);
+            }
+            sanitizeKeyKeepOpen();
+            if (i < keyKeepOpen.size() && j < keyKeepOpen.size()) {
+                Boolean tmpKeep = keyKeepOpen.get(i);
+                keyKeepOpen.set(i, keyKeepOpen.get(j));
+                keyKeepOpen.set(j, tmpKeep);
+            }
+        }
+
+        private void sanitizeKeyKeepOpen() {
+            if (keyKeepOpen == null) keyKeepOpen = new ArrayList<>();
+            int target = keys != null ? keys.size() : 0;
+            while (keyKeepOpen.size() < target) {
+                keyKeepOpen.add(Boolean.FALSE);
+            }
+            while (keyKeepOpen.size() > target) {
+                keyKeepOpen.remove(keyKeepOpen.size() - 1);
+            }
         }
     }
 
@@ -149,8 +225,7 @@ public class VirtualKeysConfig {
         TabConfig tab = new TabConfig();
         tab.name = name;
         for (int i = 1; i <= keyCount; i++) {
-            tab.keys.add("VKey" + i);
-            tab.keyCodes.add(400 + i);
+            tab.addKey("VKey" + i, 400 + i, false);
         }
         return tab;
     }

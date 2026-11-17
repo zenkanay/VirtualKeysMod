@@ -18,6 +18,7 @@ public class VirtualKeysClient implements ClientModInitializer {
     public static boolean overlayActive = false;
     public static VirtualKeyScreen overlayScreen = null;
     public static boolean overlayCapturedPress = false;
+    public static boolean simulatingVirtualKey = false;
 
     private static final java.util.Set<Integer> pressedVirtualKeys = new java.util.HashSet<>();
 

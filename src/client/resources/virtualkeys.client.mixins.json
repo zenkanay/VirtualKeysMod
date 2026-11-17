@@ -15,6 +15,7 @@
 		"MalilibInputKeyCodesMixin",
 		"MalilibInputUtilsMixin",
 		"MalilibInputEventHandlerMixin",
+		"MalilibGuiUtilsMixin",
 		"GuiMixin",
 		"ToggleKeyMappingMixin"
 	],
