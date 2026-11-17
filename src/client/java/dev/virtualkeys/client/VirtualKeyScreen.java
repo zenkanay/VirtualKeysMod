@@ -642,7 +642,7 @@ public class VirtualKeyScreen extends Screen {
         if (selected) {
             bgColor = 0xFF2563EB; // 青ハイライト（編集中のキー）
         } else if (keepOpen) {
-            bgColor = pressed ? 0x7710B981 : (hovered ? 0x6610B981 : 0x4410B981);
+            bgColor = pressed ? 0x8810B981 : (hovered ? 0x6610B981 : 0x4410B981);
         } else {
             bgColor = pressed ? 0x55FFFFFF : (hovered ? 0x44FFFFFF : 0x22FFFFFF);
         }
@@ -651,25 +651,7 @@ public class VirtualKeyScreen extends Screen {
                 : (keepOpen ? (hovered ? 0xFFFFFFFF : 0xFFD1FAE5) : (hovered ? 0xFFFFFFFF : 0xFFCCCCCC));
 
         g.fill(bx, by, bx + bw, by + bh, bgColor);
-
-        if (keepOpen) {
-            int borderColor = (hovered || selected) ? 0xFF6EE7B7 : 0xCC34D399;
-            drawBorder(g, bx, by, bw, bh, borderColor);
-
-            // 右上にピン留め（閉じない）を示すドットマーカーを表示
-            if (bw >= 10 && bh >= 8) {
-                g.fill(bx + bw - 4, by + 2, bx + bw - 2, by + 4, 0xFF6EE7B7);
-            }
-        }
-
         g.centeredText(this.font, label, bx + bw / 2, by + (bh - 8) / 2, textColor);
-    }
-
-    private static void drawBorder(GuiGraphicsExtractor g, int x, int y, int w, int h, int color) {
-        g.fill(x, y, x + w, y + 1, color);
-        g.fill(x, y + h - 1, x + w, y + h, color);
-        g.fill(x, y + 1, x + 1, y + h - 1, color);
-        g.fill(x + w - 1, y + 1, x + w, y + h - 1, color);
     }
 
     private void drawButton(GuiGraphicsExtractor g, int x, int y, int w, int h, String text, boolean active, int mx, int my) {
